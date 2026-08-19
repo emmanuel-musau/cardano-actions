@@ -135,6 +135,41 @@ core  ←  server
 
 Enforce the direction in review. The moment `effects` imports from `client`, the security argument gets harder to make.
 
+## TypeScript configuration
+
+`tsconfig.base.json` at the root holds compiler options and nothing else — no `include`, no `files`. It is strict, `ES2022`, `NodeNext` for both `module` and `moduleResolution`, and emits declarations with maps. Every package extends it; no package restates a compiler option that belongs in the base.
+
+Root `tsconfig.json` is a solution file: `include: []` plus one reference per package, so `tsc --build` at the root walks the workspace in dependency order. Add the reference when the package lands.
+
+Each package carries the same four files, mirroring evolution-sdk:
+
+| File | Role |
+|---|---|
+| `tsconfig.json` | solution file for the package — `include: []`, references `tsconfig.src.json` |
+| `tsconfig.src.json` | the sources: `include: ["src"]`, `rootDir: "src"`, own `tsBuildInfoFile` |
+| `tsconfig.build.json` | extends `tsconfig.src.json`, adds `outDir: "dist"` and `stripInternal` — what `pnpm build` runs |
+| `tsconfig.test.json` | `include` the tests, `noEmit`, references `tsconfig.src.json` |
+
+```jsonc
+// packages/core/tsconfig.src.json
+{
+  "extends": "../../tsconfig.base.json",
+  "include": ["src"],
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "dist",
+    "tsBuildInfoFile": ".tsbuildinfo/src.tsbuildinfo"
+  }
+}
+```
+
+Two consequences worth internalising before the first package is written:
+
+- **Declaration output is the linkage.** `client` typechecks against `core`'s emitted `.d.ts`, not its sources. That is why the turbo `typecheck` and `test` tasks depend on `^build` — skip the build and the import is simply unresolvable.
+- **Relative imports carry explicit file extensions** (`./util.js`, pointing at the emitted file, from `util.ts`). NodeNext rejects the extensionless form outright; this is the ESM strictness tax ADR-0003 accepts.
+
+`types: []` in the base keeps ambient globals out. A package that needs Node globals opts in with `"types": ["node"]` in its own config, which keeps `core` honest about its zero-dependency goal.
+
 ## The two data flows
 
 **Build (Mode A, the only v1 mode).** Client resolves the link through `actions.json` → `GET` metadata → renders card → wallet connect → `POST { changeAddress, network }` → server returns a *partial* intent (its side only) → **client balances locally** → complete unsigned tx. The endpoint never sees the user's UTxO set; that is the privacy advantage we extracted from the eUTxO input-selection constraint.

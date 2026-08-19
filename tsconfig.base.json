@@ -1,0 +1,54 @@
+{
+  "$schema": "http://json.schemastore.org/tsconfig",
+
+  // Compiler options only — no `include`/`files`. Every package tsconfig
+  // extends this and supplies its own inputs. Mirrors the evolution-sdk base
+  // config per ADR-0003; deltas from upstream are commented where they occur.
+  "compilerOptions": {
+    "strict": true,
+    "strictNullChecks": true,
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "noFallthroughCasesInSwitch": true,
+    "forceConsistentCasingInFileNames": true,
+
+    // Upstream leaves these off. Kept off here so `core`/`effects` inherit an
+    // identical baseline; tightening them for the effects arithmetic is a
+    // separate decision, not a silent one.
+    "exactOptionalPropertyTypes": false,
+    "noUncheckedIndexedAccess": false,
+    "noImplicitReturns": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+
+    // ESM, NodeNext both ways: relative imports carry explicit file
+    // extensions and package `exports` maps are honoured.
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "moduleDetection": "force",
+    "isolatedModules": true,
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+
+    // `types: []` keeps ambient globals out by default — a package that wants
+    // Node globals opts in with `"types": ["node"]`.
+    "types": [],
+
+    // Declaration output is what makes a workspace dependency resolvable:
+    // `client` typechecks against `core`'s emitted .d.ts, which is why the
+    // turbo `typecheck` task depends on `^build`.
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "composite": true,
+    "incremental": true,
+    "removeComments": false,
+    "noEmitOnError": false,
+
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "allowJs": false,
+    "checkJs": false,
+    "noErrorTruncation": false
+  }
+}
