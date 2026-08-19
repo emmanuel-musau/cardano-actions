@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# Nothing here writes. Publishing gets its own workflow with its own,
+# narrower grant when Changesets lands.
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  # Superseded PR runs are wasted compute — cancel them. Pushes to main are
+  # not cancelled: main's run history is the record of what was actually
+  # verified before each merge, and a cancelled run leaves a hole in it.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  ci:
+    # Four separately named checks (lint, typecheck, test, build) rather than
+    # one job with four steps: a red X names the failing gate without opening
+    # the log, and branch protection can require them individually.
+    name: ${{ matrix.task }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        task: [lint, typecheck, test, build]
+
+    steps:
+      - uses: actions/checkout@v7
+
+      # pnpm/setup supersedes pnpm/action-setup for pnpm v11+ and installs the
+      # runtime in the same step, so there is no actions/setup-node here.
+      # `version` is omitted deliberately — it is read from `packageManager` in
+      # package.json, which keeps CI and local on one pinned pnpm.
+      - uses: pnpm/setup@v2
+        with:
+          runtime: node@22
+          cache: true
+          # This action installs by default. We do it ourselves in the next
+          # step so --frozen-lockfile is visible in the workflow rather than
+          # inherited from a CI-environment default that could change.
+          install: false
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm ${{ matrix.task }}
