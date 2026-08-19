@@ -157,6 +157,28 @@ and the package must have a trusted publisher pointing at this repository,
 
 Packages start at `0.x`. Until `1.0.0`, a breaking change is a `minor` bump.
 
+## Dependency updates
+
+Dependabot keeps them current. One grouped pull request per ecosystem every
+Monday holding everything that moved inside its major, and a separate pull
+request for each major, so no breaking bump arrives buried in a batch of
+eleven others. A release has to be a few days old before it is offered.
+`.github/dependabot.yml` carries the reasoning behind each setting.
+
+Nothing merges itself. A dependency pull request runs lint, typecheck, test
+and build like any other, and a person merges it. There is no auto-merge in
+this repository and adding one would fail `test/dependency-updates.test.ts`.
+
+A bump that touches a `packages/*` manifest still needs a changeset, and
+Dependabot cannot write one. Push it onto the branch before merging:
+
+```sh
+git fetch origin dependabot/npm_and_yarn/...
+git switch dependabot/npm_and_yarn/...
+pnpm changeset          # a runtime dependency of a published package
+pnpm changeset --empty  # a dev dependency, or anything a consumer never sees
+```
+
 ## Changing the specification
 
 The CIP in `spec/` is a versioned contract that other implementations depend
