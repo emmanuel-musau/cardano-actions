@@ -18,7 +18,8 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  ci:
+  # The job id is what the Actions run graph puts after "Matrix:".
+  checks:
     # Four separately named checks (lint, typecheck, test, build) rather than
     # one job with four steps: a red X names the failing gate without opening
     # the log, and branch protection can require them individually.
