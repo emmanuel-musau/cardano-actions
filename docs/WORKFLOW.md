@@ -77,7 +77,7 @@ Once the CIP draft is frozen (#21), request/response shapes are a versioned cont
 
 ## Releases
 
-Changesets drives versioning. A changeset accompanies every `packages/*` change; the release workflow opens a version PR and publishes to npm on merge. Four packages ship publicly: `core`, `server`, `effects`, `client`.
+Changesets drives versioning. A changeset accompanies every `packages/*` change; the release workflow opens a version PR and publishes to npm on merge. Four packages ship publicly: `core`, `server`, `verifier`, `flow`.
 
 ## Environments
 

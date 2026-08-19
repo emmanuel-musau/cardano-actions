@@ -22,10 +22,10 @@ Holds no user funds. No custody, no relayer, no treasury validator. The blast ra
 
 | Package | What it does |
 |---|---|
-| `@cardano-actions/core` | types, URL resolution, `actions.json`, validation |
-| `@cardano-actions/server` | `defineAction()` + Next.js adapter |
-| `@cardano-actions/effects` | CBOR decode → deltas. The security engine. |
-| `@cardano-actions/client` | React components + CIP-30 orchestration |
+| `@cardano-actions/core` | the shared contract — schemas, URL rules, error codes |
+| `@cardano-actions/server` | publish an action endpoint — `defineAction()` + Next.js adapter |
+| `@cardano-actions/verifier` | derive what the transaction really does, and block signing if the metadata lies |
+| `@cardano-actions/flow` | run the user through it — action UI + CIP-30 wallet orchestration |
 
 Plus `apps/interstitial` (hosted, self-hostable fallback page) and `examples/adalink` (reference integration: USDM/USDCx payment actions).
 

@@ -11,5 +11,6 @@ Write an ADR when a choice is hard to reverse, affects more than one package, or
 | [0001](0001-record-architecture-decisions.md) | Record architecture decisions | Accepted |
 | [0002](0002-client-side-balancing-default.md) | Client-side balancing is the only v1 build mode | Accepted |
 | [0003](0003-mirror-evolution-sdk-toolchain.md) | Mirror the evolution-sdk toolchain | Accepted |
+| [0005](0005-package-names.md) | Name packages for the job they do, not the tier they sit in | Accepted |
 
 Three more are already ticketed as spikes and land here when decided: error-code taxonomy and spec versioning (#18), CBOR decode approach (#33), CIP-0170 go/no-go (#63).

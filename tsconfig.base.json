@@ -12,7 +12,7 @@
     "noFallthroughCasesInSwitch": true,
     "forceConsistentCasingInFileNames": true,
 
-    // Upstream leaves these off. Kept off here so `core`/`effects` inherit an
+    // Upstream leaves these off. Kept off here so `core`/`verifier` inherit an
     // identical baseline; tightening them for the effects arithmetic is a
     // separate decision, not a silent one.
     "exactOptionalPropertyTypes": false,
@@ -35,7 +35,7 @@
     "types": [],
 
     // Declaration output is what makes a workspace dependency resolvable:
-    // `client` typechecks against `core`'s emitted .d.ts, which is why the
+    // `flow` typechecks against `core`'s emitted .d.ts, which is why the
     // turbo `typecheck` task depends on `^build`.
     "declaration": true,
     "declarationMap": true,

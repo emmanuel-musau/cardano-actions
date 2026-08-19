@@ -47,7 +47,7 @@ Publishers issue KERI-backed attestations (via signify-ts) binding a domain to i
 
 ## 6. M1 scope (mainnet in 3 months)
 
-**In:** spec + CIP draft; `core`; `server` with one adapter (Next.js); `effects` engine; `client` SDK; hosted + self-hostable interstitial; CIP-0170 publisher attestation; AdaLink USDM/USDCx payment action live on mainnet; public adversarial corpus.
+**In:** spec + CIP draft; `core`; `server` with one adapter (Next.js); the `verifier` effects engine; the `flow` client SDK; hosted + self-hostable interstitial; CIP-0170 publisher attestation; AdaLink USDM/USDCx payment action live on mainnet; public adversarial corpus.
 
 **Deferred (roadmap — do not build in M1):** mobile CIP-13 `//action` deep links; browser extension inline rendering; server-side balancing (Mode B); additional framework adapters; additional action types.
 

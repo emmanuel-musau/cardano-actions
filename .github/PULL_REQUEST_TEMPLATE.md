@@ -17,7 +17,7 @@ Closes #
      the test and say why it exercises the new path.
 
      If this fixes a bug, name the test that reproduces it.
-     If this touches `effects`, say what was added to the adversarial corpus. -->
+     If this touches `verifier`, say what was added to the adversarial corpus. -->
 
 ## Checklist
 
@@ -34,7 +34,7 @@ Closes #
 Tick only if this PR touches one. Breaking one of these is a bug whatever the
 ticket says; if the ticket seems to require it, stop and raise it on the issue.
 
-- [ ] `effects` stays pure — no imports from `client`, `server`, or any network layer.
+- [ ] `verifier` stays pure — no imports from `flow`, `server`, or any network layer.
 - [ ] The client still never sends the user's UTxO set to an action endpoint.
 - [ ] A metadata/effects mismatch still hard-blocks signing, with no override path.
 - [ ] `signTx` still returns a witness set, assembled into the body before `submitTx`.

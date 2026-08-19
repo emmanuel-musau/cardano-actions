@@ -47,7 +47,7 @@ pnpm typecheck        # tsc --noEmit
 Testing is not a phase, a follow-up ticket, or something the human adds afterwards. **Code without tests is not finished work here, and proposing it as finished is a mistake.**
 
 - **Write tests in the same PR as the code.** Never say "tests can come later" or open a PR whose test story is a TODO. If a ticket's acceptance criteria omit tests, the criteria are incomplete — write them anyway.
-- **Test-first where the behaviour is specifiable.** For `core`, `effects`, and `server`, the expected input/output is knowable before the implementation exists; write the failing test first. Bug fixes always start with a test that reproduces the bug.
+- **Test-first where the behaviour is specifiable.** For `core`, `verifier`, and `server`, the expected input/output is knowable before the implementation exists; write the failing test first. Bug fixes always start with a test that reproduces the bug.
 - **Never weaken a test to make it pass.** Do not delete assertions, loosen a matcher, widen a tolerance, add a skip, or mark something `todo` to get CI green. If a test fails, either the code is wrong or the test encodes a stale expectation — say which, and fix that. Silently disabling a test is the worst possible outcome.
 - **Report test results honestly.** If tests fail, show the output and say so. Never describe work as done or verified when the suite is red, was not run, or was only partially run.
 - **No mocking the thing under test.** Mock the network and the wallet; never mock CBOR decoding, effects derivation, or schema validation — those are the behaviour being proved.
@@ -57,17 +57,17 @@ What "tested" means per package:
 | Package | The bar |
 |---|---|
 | `core` | Every schema validated against both valid and malformed payloads. Every URL / `actions.json` resolution rule has a case, including the ones that must be rejected. Every error code is reachable in a test. |
-| `effects` | The highest bar in the repo. Property-style coverage of derivation arithmetic, `test/fixtures/` for known-good regressions, and `test/adversarial/` for transactions whose declared metadata lies. **Every adversarial case must be blocked, and the corpus grows with every bug** — any transaction that should have been blocked and wasn't becomes a permanent test case. |
+| `verifier` | The highest bar in the repo. Property-style coverage of derivation arithmetic, `test/fixtures/` for known-good regressions, and `test/adversarial/` for transactions whose declared metadata lies. **Every adversarial case must be blocked, and the corpus grows with every bug** — any transaction that should have been blocked and wasn't becomes a permanent test case. |
 | `server` | `defineAction` output validated against `core` schemas; CORS, HTTP status mapping, and each spec error code exercised. |
 | `identity` | Attestation issue/resolve round-trip, plus explicit tests for invalid, expired, and absent attestations — an unverified publisher must render as unverified, never as verified. |
-| `client` | Component tests for the effects panel and the mismatch block, wallet flow tested against a stubbed CIP-30 provider, and the rebuild-and-retry path covered. |
+| `flow` | Component tests for the effects panel and the mismatch block, wallet flow tested against a stubbed CIP-30 provider, and the rebuild-and-retry path covered. |
 | apps / examples | The critical user path end-to-end. Not every pixel — the flow that must not break. |
 
 The **hard invariants below each need a test that fails if the invariant is broken.** An invariant nothing tests is a comment, not a guarantee.
 
 ## Hard invariants (violating these is a bug, whatever the ticket says)
 
-1. `packages/effects` stays a pure function of (tx CBOR, declared metadata, user addresses). It must not import from `client`, `server`, or any network layer.
+1. `packages/verifier` stays a pure function of (tx CBOR, declared metadata, user addresses). It must not import from `flow`, `server`, or any network layer.
 2. The client never sends the user's UTxO set to an action endpoint (Mode A only in v1).
 3. A metadata/effects mismatch always hard-blocks signing. No override paths, no allowlists.
 4. `signTx` returns a witness set, not a signed tx — witnesses are assembled into the body before `submitTx`.

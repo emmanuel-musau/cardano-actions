@@ -11,7 +11,7 @@ cardano-actions/
 │   ├── workflows/release.yml  Changesets → npm, manual approval before publish
 │   ├── ISSUE_TEMPLATE/        bug, feature, spec-change
 │   ├── PULL_REQUEST_TEMPLATE.md  the definition of done, as a checklist
-│   └── CODEOWNERS             spec/ and packages/effects/ route to the tech lead
+│   └── CODEOWNERS             spec/ and packages/verifier/ route to the tech lead
 ├── spec/
 │   ├── CIP-XXXX/
 │   │   ├── README.md          the CIP: //action authority, GET/POST shapes,
@@ -20,10 +20,10 @@ cardano-actions/
 │   └── examples/              canonical request/response pairs
 ├── packages/
 │   ├── core/                  types, URL resolution, actions.json, validation
-│   ├── effects/               CBOR decode → deltas. The security engine.
+│   ├── verifier/              CBOR decode → deltas. The security engine.
 │   ├── server/                defineAction() + Next.js adapter
 │   ├── identity/              CIP-0170 attestation issue + resolve (signify-ts)
-│   └── client/                React components + CIP-30 orchestration
+│   └── flow/                  React components + CIP-30 orchestration
 ├── apps/
 │   ├── interstitial/          hosted + self-hostable fallback page
 │   └── docs/                  docs site + the Action tester
@@ -47,7 +47,7 @@ Deferred to roadmap, **not** built in M1: `packages/deeplink` (CIP-13 `//action`
 ## Package responsibilities
 
 ### `core`
-Shared vocabulary. Effect Schema definitions for the GET metadata response and the partial-intent POST response; `actions.json` fetch + pathPattern resolution; parameter template interpolation (`{amount}`). Depends on nothing else in the workspace. Both `server` (produce) and `client` (consume) validate against these schemas, which makes the schema the executable form of the spec.
+Shared vocabulary. Effect Schema definitions for the GET metadata response and the partial-intent POST response; `actions.json` fetch + pathPattern resolution; parameter template interpolation (`{amount}`). Depends on nothing else in the workspace. Both `server` (produce) and `flow` (consume) validate against these schemas, which makes the schema the executable form of the spec.
 
 | Module | Owns |
 |---|---|
@@ -68,7 +68,7 @@ Zero runtime dependencies is the goal.
 
 The whole developer-experience promise — an Action in about twenty lines — is this package's job.
 
-### `effects` — the security engine
+### `verifier` — the security engine
 Decodes balanced transaction CBOR and derives, independently of anything the endpoint claimed:
 
 | Derived | Rendered as |
@@ -82,7 +82,7 @@ Decodes balanced transaction CBOR and derives, independently of anything the end
 
 Then compares derived effects against declared metadata and returns `match | mismatch(reasons[])`. Undeclared effects — an extra output, an unexpected certificate — are always a mismatch.
 
-**This package is a pure function of (tx CBOR, declared metadata, user addresses).** It performs no I/O and imports nothing from `client`, `server`, or any network layer. That purity is what makes the adversarial corpus a meaningful proof: the corpus exercises the exact code path that runs before a real signature. If the engine had side effects or network calls, "we blocked 100% of lying transactions" would be a claim about a system rather than a property of a function.
+**This package is a pure function of (tx CBOR, declared metadata, user addresses).** It performs no I/O and imports nothing from `flow`, `server`, or any network layer. That purity is what makes the adversarial corpus a meaningful proof: the corpus exercises the exact code path that runs before a real signature. If the engine had side effects or network calls, "we blocked 100% of lying transactions" would be a claim about a system rather than a property of a function.
 
 | Module | Owns |
 |---|---|
@@ -93,14 +93,14 @@ Then compares derived effects against declared metadata and returns `match | mis
 | `test/fixtures/` | ~50 known-good transactions with expected outputs. Regression safety. |
 | `test/adversarial/` | **The proof artefact.** Transactions whose declared metadata contradicts what they do — hidden outputs, wrong pool, inflated fee, unexpected mint. Public, and the strongest single piece of evidence that the security claim holds. |
 
-Deliberately consumable standalone: a wallet or an explorer should be able to use `effects` without adopting the rest of the protocol. That reusability is an argument in the CIP.
+Deliberately consumable standalone: a wallet or an explorer should be able to use `verifier` without adopting the rest of the protocol. That reusability is an argument in the CIP.
 
 ### `identity`
 CIP-0170 attestation issuance and resolution via `signify-ts`. A publisher binds their domain to their endpoints; clients resolve and display verified identity.
 
-**Why it is its own package.** CIP-0170 is the piece most likely to be cut at the Month 1 go/no-go — it is pre-production and new to the team. As a separate package, cutting it means deleting a dependency line; folded into `client`, cutting it means untangling code under time pressure. This split is a scope-risk hedge, not an architectural preference.
+**Why it is its own package.** CIP-0170 is the piece most likely to be cut at the Month 1 go/no-go — it is pre-production and new to the team. As a separate package, cutting it means deleting a dependency line; folded into `flow`, cutting it means untangling code under time pressure. This split is a scope-risk hedge, not an architectural preference.
 
-### `client`
+### `flow`
 CIP-30 orchestration plus React components. Wallet discovery/enable, change address + network id, local balancing via `@evolution-sdk/evolution` against the user's own UTxOs, effects derivation, `signTx` → witness assembly → `submitTx`, and rebuild-and-retry when UTxOs move mid-flow. Components: action card, generated parameter form, effects panel with the mismatch block, publisher chip, wallet selector, receipt, error states. Hooks (`useAction`, `useWallet`, `useEffects`) are the composable surface.
 
 `tokens.css` holds the design tokens as CSS custom properties and is the single source of truth — no hard-coded hex anywhere in components.
@@ -121,23 +121,23 @@ Reference integration, not a library. Proves the SDK on a product with real user
 ```
 core  ←  server
   ↑
-  └───  client  →  effects
-          │  ↓
-          │  evolution-sdk
-          └→ identity
+  └───  flow  →  verifier
+         │  ↓
+         │  evolution-sdk
+         └→ identity
 
-      interstitial  →  (client, core)
-      docs          →  (client, core)
+      interstitial  →  (flow, core)
+      docs          →  (flow, core)
       adalink       →  (server)
 ```
 
 - `core` depends on no workspace package.
-- `effects` depends on `core` types only — never on `client`/`server`.
-- `server` never imports `client` or `effects`; a dApp shipping an endpoint should not pull a React tree.
-- `identity` is a leaf that `client` consumes; nothing depends on `identity` in reverse.
+- `verifier` depends on `core` types only — never on `flow`/`server`.
+- `server` never imports `flow` or `verifier`; a dApp shipping an endpoint should not pull a React tree.
+- `identity` is a leaf that `flow` consumes; nothing depends on `identity` in reverse.
 - Apps depend on packages, never the reverse.
 
-Enforce the direction in review. The moment `effects` imports from `client`, the security argument gets harder to make.
+Enforce the direction in review. The moment `verifier` imports from `flow`, the security argument gets harder to make.
 
 ## TypeScript configuration
 
@@ -169,7 +169,7 @@ Each package carries the same four files, mirroring evolution-sdk:
 
 Two consequences worth internalising before the first package is written:
 
-- **Declaration output is the linkage.** `client` typechecks against `core`'s emitted `.d.ts`, not its sources. That is why the turbo `typecheck` and `test` tasks depend on `^build` — skip the build and the import is simply unresolvable.
+- **Declaration output is the linkage.** `flow` typechecks against `core`'s emitted `.d.ts`, not its sources. That is why the turbo `typecheck` and `test` tasks depend on `^build` — skip the build and the import is simply unresolvable.
 - **Relative imports carry explicit file extensions** (`./util.js`, pointing at the emitted file, from `util.ts`). NodeNext rejects the extensionless form outright; this is the ESM strictness tax ADR-0003 accepts.
 
 `types: []` in the base keeps ambient globals out. A package that needs Node globals opts in with `"types": ["node"]` in its own config, which keeps `core` honest about its zero-dependency goal.
@@ -201,14 +201,14 @@ Prettier settings mirror evolution-sdk: no semicolons, double quotes, no trailin
 
 Two rules carry more weight than the rest:
 
-- **`no-console` is an error.** Library code returns typed errors; it does not print. User-facing failures go through the spec error codes with human-readable messages, which is a `client`/interstitial concern, not a stray log line in `effects`.
+- **`no-console` is an error.** Library code returns typed errors; it does not print. User-facing failures go through the spec error codes with human-readable messages, which is a `flow`/interstitial concern, not a stray log line in `verifier`.
 - **`@typescript-eslint/no-unused-vars` respects a `_` prefix**, so a deliberately discarded binding says so in its name.
 
 Type-aware linting (`recommendedTypeChecked`, which is what catches floating promises) is not enabled yet — it needs real packages with `tsconfig.src.json` inputs to point at. Worth turning on once `core` exists.
 
 ## Test runner
 
-Vitest 4 dropped `vitest.workspace.ts`; the workspace now lives in root `vitest.config.ts` under `test.projects`, globbing `packages/*` and `apps/*`. A package's own `vitest.config.ts` overrides whatever it sets — `client` will want `jsdom`, `effects` will want longer timeouts — and the root file owns only what is genuinely shared: coverage settings and `globals: false`.
+Vitest 4 dropped `vitest.workspace.ts`; the workspace now lives in root `vitest.config.ts` under `test.projects`, globbing `packages/*` and `apps/*`. A package's own `vitest.config.ts` overrides whatever it sets — `flow` will want `jsdom`, `verifier` will want longer timeouts — and the root file owns only what is genuinely shared: coverage settings and `globals: false`.
 
 `globals: false` is deliberate. The base tsconfig ships `types: []`, and a test that imports `describe`/`it`/`expect` by name reads without ambient magic.
 
@@ -240,10 +240,10 @@ Effects without identity leaves users approving correct transactions from unknow
 ## Conventions a reviewer enforces
 
 - **No hard-coded colours outside `tokens.css`.** Lint-enforced where possible.
-- **`effects` stays pure.** No network calls, no React imports, no wallet references. Ever.
+- **`verifier` stays pure.** No network calls, no React imports, no wallet references. Ever.
 - **The adversarial corpus grows with every bug.** Any transaction that should have been blocked and wasn't becomes a permanent test case.
 - **Spec changes are PRs against `spec/` first**, implementation second. The schemas are the contract.
-- **Every package publishes independently** via Changesets. A fix in `effects` must not force a `client` release.
+- **Every package publishes independently** via Changesets. A fix in `verifier` must not force a `flow` release.
 
 ## Deliberate non-architecture
 

@@ -43,10 +43,10 @@ body:
       label: Where it belongs
       options:
         - "@cardano-actions/core"
-        - "@cardano-actions/effects"
+        - "@cardano-actions/verifier"
         - "@cardano-actions/server"
         - "@cardano-actions/identity"
-        - "@cardano-actions/client"
+        - "@cardano-actions/flow"
         - apps/interstitial
         - examples/adalink
         - repo tooling (CI, build, lint)

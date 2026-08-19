@@ -19,10 +19,10 @@ body:
       description: Best guess is fine.
       options:
         - "@cardano-actions/core"
-        - "@cardano-actions/effects"
+        - "@cardano-actions/verifier"
         - "@cardano-actions/server"
         - "@cardano-actions/identity"
-        - "@cardano-actions/client"
+        - "@cardano-actions/flow"
         - apps/interstitial
         - examples/adalink
         - spec
@@ -75,7 +75,7 @@ body:
     attributes:
       label: Environment
       description: Node and package versions, wallet, and network.
-      placeholder: node 22.22.0 · @cardano-actions/effects 0.1.0 · Lace · preprod
+      placeholder: node 22.22.0 · @cardano-actions/verifier 0.1.0 · Lace · preprod
 
   - type: checkboxes
     id: checks
