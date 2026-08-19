@@ -34,7 +34,8 @@ cardano-actions/
 ├── turbo.json                 task graph + caching, inter-package ordering
 ├── tsconfig.base.json         strict ESM, NodeNext — every package extends this
 ├── eslint.config.js           ESLint flat config + Prettier
-├── vitest.workspace.ts        whole suite from root; each package keeps its config
+├── vitest.config.ts           whole suite from root; each package keeps its config
+├── tsconfig.test.json         shared test compiler options
 └── LICENSE                    MIT
 ```
 
@@ -148,7 +149,7 @@ Each package carries the same four files, mirroring evolution-sdk:
 | `tsconfig.json` | solution file for the package — `include: []`, references `tsconfig.src.json` |
 | `tsconfig.src.json` | the sources: `include: ["src"]`, `rootDir: "src"`, own `tsBuildInfoFile` |
 | `tsconfig.build.json` | extends `tsconfig.src.json`, adds `outDir: "dist"` and `stripInternal` — what `pnpm build` runs |
-| `tsconfig.test.json` | `include` the tests, `noEmit`, references `tsconfig.src.json` |
+| `tsconfig.test.json` | extends the **root** `tsconfig.test.json`, `include`s the tests, references `tsconfig.src.json` |
 
 ```jsonc
 // packages/core/tsconfig.src.json
@@ -201,6 +202,22 @@ Two rules carry more weight than the rest:
 - **`@typescript-eslint/no-unused-vars` respects a `_` prefix**, so a deliberately discarded binding says so in its name.
 
 Type-aware linting (`recommendedTypeChecked`, which is what catches floating promises) is not enabled yet — it needs real packages with `tsconfig.src.json` inputs to point at. Worth turning on once `core` exists.
+
+## Test runner
+
+Vitest 4 dropped `vitest.workspace.ts`; the workspace now lives in root `vitest.config.ts` under `test.projects`, globbing `packages/*` and `apps/*`. A package's own `vitest.config.ts` overrides whatever it sets — `client` will want `jsdom`, `effects` will want longer timeouts — and the root file owns only what is genuinely shared: coverage settings and `globals: false`.
+
+`globals: false` is deliberate. The base tsconfig ships `types: []`, and a test that imports `describe`/`it`/`expect` by name reads without ambient magic.
+
+| Command | Does |
+|---|---|
+| `pnpm test` | `turbo run test` — each package's suite, cached. The CI gate. |
+| `pnpm test:watch` | `vitest` from the root across every project |
+| `pnpm coverage` | the same suites with v8 coverage |
+
+Test sources are typechecked but never emitted, so root `tsconfig.test.json` turns `composite`/`declaration` back off and adds `types: ["node"]`. Only tests get Node globals: `src/` stays on `types: []`, so a `process.env` read inside `core` is a compile error rather than a silent runtime dependency.
+
+**`passWithNoTests` is not set, anywhere.** A package that declares a `test` script and ships no test files fails its run — which is the intended outcome in a repo where code without tests is not finished work. Today `pnpm test` passes because there are no packages yet, not because empty suites are tolerated.
 
 ## The two data flows
 

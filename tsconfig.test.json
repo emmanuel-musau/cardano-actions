@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json.schemastore.org/tsconfig",
+
+  // Shared test config. Package test tsconfigs extend this and supply their
+  // own `include` plus a reference to their `tsconfig.src.json`.
+  //
+  // Tests are typechecked, never emitted — so the declaration/composite
+  // settings the base turns on for shippable code are turned back off here.
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "composite": false,
+    "declaration": false,
+    "declarationMap": false,
+
+    // Tests may touch the filesystem and process env; source files still
+    // inherit `types: []` from the base and must opt in themselves.
+    "types": ["node"]
+  }
+}
