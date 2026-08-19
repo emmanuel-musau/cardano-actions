@@ -36,7 +36,20 @@
     // `//#` tasks run against the repo root and are invoked by `pnpm lint`
     // alongside the per-package task.
     "//#lint:root": {
-      "inputs": ["eslint.config.js", "*.ts", "*.js", "*.mjs", "*.cjs"],
+      "inputs": ["eslint.config.js", "test/**", "*.ts", "*.js", "*.mjs", "*.cjs"],
+      "outputs": []
+    },
+
+    // Same for the repo tests' own types — no package tsconfig includes them.
+    "//#typecheck:repo": {
+      "inputs": ["test/**", "tsconfig.test.json"],
+      "outputs": []
+    },
+
+    // Repo-level invariants (test/), in no workspace package — same reason
+    // `//#lint:root` exists. `turbo run test` alone would never run them.
+    "//#test:repo": {
+      "inputs": ["test/**", "vitest.config.ts", ".changeset/config.json", "*/*/package.json"],
       "outputs": []
     },
 

@@ -1,0 +1,13 @@
+{
+  "$schema": "https://unpkg.com/@changesets/config@4.0.0/schema.json",
+  "changelog": ["@changesets/changelog-github", { "repo": "emmanuel-musau/cardano-actions" }],
+  "commit": false,
+  "access": "public",
+  "baseBranch": "main",
+  "fixed": [],
+  "linked": [],
+  "updateInternalDependencies": "patch",
+  "changedFilePatterns": ["**", "!**/test/**", "!**/*.test.ts"],
+  "privatePackages": { "version": false, "tag": false },
+  "ignore": []
+}

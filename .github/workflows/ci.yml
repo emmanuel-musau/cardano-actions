@@ -5,8 +5,8 @@ on:
   push:
     branches: [main]
 
-# Nothing here writes. Publishing gets its own workflow with its own,
-# narrower grant when Changesets lands.
+# Nothing here writes. Publishing lives in release.yml with its own, narrower
+# grant — the only place in this repository that can write outside it.
 permissions:
   contents: read
 
@@ -49,3 +49,31 @@ jobs:
       - run: pnpm install --frozen-lockfile
 
       - run: pnpm ${{ matrix.task }}
+
+  # `packages/*` changes ship a changeset — docs/WORKFLOW.md makes it part of
+  # the definition of done, and a rule with no gate behind it decays into a
+  # rule people remember sometimes.
+  changeset:
+    name: changeset
+    if: github.event_name == 'pull_request' && !startsWith(github.head_ref, 'changeset-release/')
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # `status --since` diffs against the base branch, which needs history.
+          fetch-depth: 0
+
+      - uses: pnpm/setup@v2
+        with:
+          runtime: node@22
+          cache: true
+          install: false
+
+      - run: pnpm install --frozen-lockfile
+
+      # Exits non-zero when a package changed with no changeset to release it.
+      # Skipped on the version PR that release.yml opens: that PR bumps every
+      # affected package while consuming the changesets, so it could never
+      # satisfy this gate.
+      - run: pnpm exec changeset status --since=origin/${{ github.base_ref }}
