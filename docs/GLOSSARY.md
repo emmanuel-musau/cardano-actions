@@ -24,8 +24,6 @@ Terms used throughout the spec, issues, and code. Cardano-specific meanings, not
 
 **Collateral** — UTxOs pledged to cover fees if a script fails validation. Relevant to Mode B and script-heavy actions; out of M1 scope.
 
-**Declared footprint** — the Catalyst reporting artefact: script hashes, policy IDs, addresses, token names, registered message tag, and team wallets (excluded from adoption metrics).
-
 **Deposit** — refundable ADA locked by certain certificates, notably stake key registration (2 ADA). Shown separately from fees in the effects panel because the user gets it back.
 
 **Derived effects** — what the effects engine computes from a transaction body: ADA delta, per-asset deltas, fee, certificates, withdrawals, mint/burn, validity interval. Arithmetic, not simulation.
@@ -36,7 +34,7 @@ Terms used throughout the spec, issues, and code. Cardano-specific meanings, not
 
 **Interstitial** — the Tier-1 client: a hosted, self-hostable page that runs the whole flow using only CIP-30, requiring no wallet cooperation.
 
-**Message tag** — a registered transaction metadata label identifying transactions produced through our integration, for Catalyst measurement.
+**Message tag** — a registered transaction metadata label identifying transactions produced through our integration, so real usage can be measured on-chain.
 
 **Mismatch** — a contradiction between declared metadata and derived effects. Always hard-blocks signing; there is no override path.
 
@@ -49,8 +47,6 @@ Terms used throughout the spec, issues, and code. Cardano-specific meanings, not
 **Preprod** — the Cardano test network used for all end-to-end work before mainnet.
 
 **Reference integration** — AdaLink. Proves the SDK on a product with real users; not a library and not a template.
-
-**Transaction Integrity Standard** — the Catalyst rule set governing adoption metrics: no subsidised transactions, no per-transaction incentives, no wallets we control counted.
 
 **Validity interval** — the slot range in which a transaction may be included. Rendered to users as a wall-clock expiry ("expires in 4m 12s"); short intervals plus rebuild-and-retry handle UTxOs moving mid-flow.
 

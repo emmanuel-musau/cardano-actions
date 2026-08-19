@@ -25,4 +25,4 @@ Spike tickets are not done until their ADR is written.
 
 ## Consequences
 
-Each spike ticket carries a small documentation cost. In exchange, the CIP submission and the Catalyst evidence bundle can both point at a written trail of reasoning, and reviewers asking "why not Mode B?" or "why this CBOR library?" get an answer that does not depend on anyone's recall.
+Each spike ticket carries a small documentation cost. In exchange, the CIP submission and the test evidence can both point at a written trail of reasoning, and reviewers asking "why not Mode B?" or "why this CBOR library?" get an answer that does not depend on anyone's recall.

@@ -33,7 +33,7 @@ Plus `apps/interstitial` (hosted, self-hostable fallback page) and `examples/ada
 
 | Document | Read it for |
 |---|---|
-| [docs/REQUIREMENTS.md](docs/REQUIREMENTS.md) | product scope, protocol contract, security model, grant obligations |
+| [docs/REQUIREMENTS.md](docs/REQUIREMENTS.md) | product scope, protocol contract, security model, delivery scope |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | package layout, dependency rules, data flows, trust model |
 | [docs/WORKFLOW.md](docs/WORKFLOW.md) | board process, branching, commits, definition of done |
 | [docs/DECISIONS/](docs/DECISIONS/) | architecture decision records |
@@ -46,9 +46,9 @@ Plus `apps/interstitial` (hosted, self-hostable fallback page) and `examples/ada
 
 [`@evolution-sdk/evolution`](https://github.com/IntersectMBO/evolution-sdk) for transaction construction, CIP-30 for signing, CIP-13 for routing, CIP-0170 for publisher identity. This extends the ecosystem's own standards rather than replacing them.
 
-## Funding
+## Standardisation
 
-A Cardano Catalyst Pilot project. The specification is submitted to `cardano-foundation/CIPs` so the standard belongs to the ecosystem.
+The specification is submitted to `cardano-foundation/CIPs` after the implementation runs on mainnet, so the standard belongs to the ecosystem rather than to this repository.
 
 ## License
 

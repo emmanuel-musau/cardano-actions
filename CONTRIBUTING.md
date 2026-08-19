@@ -1,9 +1,8 @@
 # Contributing
 
-Thanks for looking. This is a Cardano Catalyst Pilot project: an open
-specification, plus the TypeScript SDK that implements it. The specification
-belongs to the ecosystem rather than to this repository, and outside
-contributions are welcome on that basis.
+Thanks for looking. This is an open specification, plus the TypeScript SDK
+that implements it. The specification belongs to the ecosystem rather than to
+this repository, and outside contributions are welcome on that basis.
 
 Read this page before opening a PR. It is short, and the parts that look
 strict — tests, the mismatch invariant, spec changes — are the parts that make
