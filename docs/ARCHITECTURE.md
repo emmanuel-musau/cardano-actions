@@ -33,7 +33,7 @@ cardano-actions/
 ├── pnpm-workspace.yaml        packages/*, apps/*, examples/*
 ├── turbo.json                 task graph + caching, inter-package ordering
 ├── tsconfig.base.json         strict ESM, NodeNext — every package extends this
-├── eslint.config.js           ESLint 9 flat config + Prettier
+├── eslint.config.js           ESLint flat config + Prettier
 ├── vitest.workspace.ts        whole suite from root; each package keeps its config
 └── LICENSE                    MIT
 ```
@@ -169,6 +169,38 @@ Two consequences worth internalising before the first package is written:
 - **Relative imports carry explicit file extensions** (`./util.js`, pointing at the emitted file, from `util.ts`). NodeNext rejects the extensionless form outright; this is the ESM strictness tax ADR-0003 accepts.
 
 `types: []` in the base keeps ambient globals out. A package that needs Node globals opts in with `"types": ["node"]` in its own config, which keeps `core` honest about its zero-dependency goal.
+
+## Dependency versions
+
+**Every dependency tracks latest.** ADR-0003 says mirror the evolution-sdk *toolchain* — the same tools, not the same version pins. Upstream lags, and inheriting its lag means inheriting bugs that are already fixed. Check `npm view <pkg> version` before adding anything, and take the current release.
+
+One exception is live, and it is not a preference:
+
+| Package | Held at | Why |
+|---|---|---|
+| `typescript` | `^6.0.3` | `typescript-eslint` declares `typescript >=4.8.4 <6.1.0`. No release of it — not even canary — supports TypeScript 7, the native port. Moving to 7 means giving up TypeScript linting entirely. |
+
+Revisit the moment `typescript-eslint` widens that peer range. Anything else falling behind is a bug, not a decision.
+
+## Lint and format
+
+One flat config at the root — `eslint.config.js` — governs the whole workspace. Packages do not carry their own ESLint config; they carry a `"lint": "eslint ."` script so the turbo `lint` task can run and cache them per package. ESLint judges correctness only: `eslint-config-prettier` is applied last and switches off every rule that Prettier already decides, so the two tools never disagree about a line.
+
+| Command | Does |
+|---|---|
+| `pnpm lint` | `turbo run lint` — each package's ESLint pass, cached |
+| `pnpm lint:fix` | the same with `--fix` |
+| `pnpm format` | Prettier writes across the repo |
+| `pnpm format:check` | Prettier verifies without writing — the CI gate |
+
+Prettier settings mirror evolution-sdk: no semicolons, double quotes, no trailing comma, 120 columns. Markdown is in `.prettierignore` on purpose — `docs/` and `spec/` are hand-authored prose, and a reflowed table buries the actual edit in a review.
+
+Two rules carry more weight than the rest:
+
+- **`no-console` is an error.** Library code returns typed errors; it does not print. User-facing failures go through the spec error codes with human-readable messages, which is a `client`/interstitial concern, not a stray log line in `effects`.
+- **`@typescript-eslint/no-unused-vars` respects a `_` prefix**, so a deliberately discarded binding says so in its name.
+
+Type-aware linting (`recommendedTypeChecked`, which is what catches floating promises) is not enabled yet — it needs real packages with `tsconfig.src.json` inputs to point at. Worth turning on once `core` exists.
 
 ## The two data flows
 
