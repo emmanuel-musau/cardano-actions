@@ -9,5 +9,15 @@
   "engines": {
     "node": ">=22",
     "pnpm": ">=11"
+  },
+  "scripts": {
+    "build": "turbo run build",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "clean": "turbo run clean && rm -rf .turbo"
+  },
+  "devDependencies": {
+    "turbo": "2.10.11"
   }
 }

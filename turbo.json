@@ -1,0 +1,37 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+
+  // Root configs every package inherits. A change here must invalidate every
+  // cached task, or a tightened compiler flag silently never re-runs.
+  // The lockfile and pnpm-workspace.yaml are hashed by turbo already.
+  "globalDependencies": ["tsconfig.base.json", ".npmrc"],
+
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**"]
+    },
+
+    // `^build` is not optional here: NodeNext resolves a workspace dependency
+    // through its emitted .d.ts, so typechecking `client` requires `core` to
+    // have been built. Same reason `test` waits on it.
+    "typecheck": {
+      "dependsOn": ["^build"],
+      "outputs": []
+    },
+
+    "test": {
+      "dependsOn": ["^build"],
+      "outputs": ["coverage/**"]
+    },
+
+    // Flat-config ESLint reads source, not build output — no upstream build.
+    "lint": {
+      "outputs": []
+    },
+
+    "clean": {
+      "cache": false
+    }
+  }
+}
