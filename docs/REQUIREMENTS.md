@@ -1,6 +1,6 @@
 # Requirements
 
-Distilled from the design document and the Catalyst Pilot proposal. This file is the product source of truth for development; the CIP draft in `spec/` is the normative protocol text once written.
+Distilled from the design document. This file is the product source of truth for development; the CIP draft in `spec/` is the normative protocol text once written.
 
 ## 1. Problem
 
@@ -55,13 +55,13 @@ Publishers issue KERI-backed attestations (via signify-ts) binding a domain to i
 
 Stablecoin payment action: recipient, amount, USDM/USDCx choice; parameterised tip variant; human URLs (`/pay/HANDLE`) via actions.json. Declared metadata must exactly match derived effects. End-to-end on preprod first, then mainnet with transactions labelled with the registered message tag.
 
-## 8. Grant obligations (real work, ticketed)
+## 8. What shipping means (each one ticketed)
 
-- Declared footprint: script hashes, policy IDs, addresses, token names, registered message tag, team wallets (excluded from metrics).
-- Release notes, test evidence bundle (CI links, corpus block-rate report, wallet matrix, mainnet tx hashes), walkthrough video, Demo Day presentation.
+- Four packages published to npm under `@cardano-actions` with release notes and a fresh-install smoke test.
+- Developer documentation: quickstart, `actions.json` and client integration guides, effects-model explainer, self-host walkthrough.
+- Public adversarial corpus with a 100% block-rate report, plus a wallet compatibility matrix run on preprod.
 - CIP PR to `cardano-foundation/CIPs` — submitted after mainnet, documenting a running implementation.
-- Adoption window (M2): external wallets only, no subsidised or self-generated transactions, fixed-prize bounty paid on delivered work never volume.
-- Capacity truth: ~4.5 person-days/week across two part-time people; total M1 ≈ 60 person-days. Scope discipline over breadth.
+- Usage measured from external wallets only; transactions we generate ourselves are recorded and never counted.
 
 ## 9. Non-goals, stated plainly
 

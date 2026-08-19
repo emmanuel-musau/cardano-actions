@@ -15,9 +15,9 @@ We consume evolution-sdk for transaction construction. We do not reimplement any
 
 ## Alternatives considered
 
-**Pick each tool on its own merits.** Produces a defensible stack and a week of decisions, on a budget where the effects engine is the critical path.
+**Pick each tool on its own merits.** Produces a defensible stack and a week of decisions, while the effects engine is the critical path.
 
-**Reimplement transaction building to avoid a heavy dependency.** Would replace the project's differentiator — effects derivation — with a rewrite of solved work, and forfeit the one credibility argument the proposal leans on: that the team maintains the library this is built on.
+**Reimplement transaction building to avoid a heavy dependency.** Would replace the project's differentiator — effects derivation — with a rewrite of solved work, and forfeit the strongest credibility argument this project has: that the team maintains the library it is built on.
 
 ## Consequences
 

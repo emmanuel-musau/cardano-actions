@@ -13,7 +13,7 @@ Never mention Claude, Anthropic, or any AI tool anywhere in this repository's ou
 
 ## Source of truth (read before non-trivial work)
 
-- `docs/REQUIREMENTS.md` — product scope, protocol contract, security model, grant obligations.
+- `docs/REQUIREMENTS.md` — product scope, protocol contract, security model, delivery scope.
 - `docs/ARCHITECTURE.md` — package layout, dependency rules, invariants.
 - `docs/WORKFLOW.md` — issue/board process, branching, PR and commit conventions.
 - `docs/DECISIONS/` — ADRs. Decisions recorded there are settled; do not relitigate, add a new ADR to change one.
@@ -72,7 +72,7 @@ The **hard invariants below each need a test that fails if the invariant is brok
 3. A metadata/effects mismatch always hard-blocks signing. No override paths, no allowlists.
 4. `signTx` returns a witness set, not a signed tx — witnesses are assembled into the body before `submitTx`.
 5. Nothing in this codebase ever holds, custodies, or relays user funds.
-6. Team/test wallets are recorded in the footprint doc and excluded from adoption metrics (Catalyst Transaction Integrity Standard).
+6. Transactions we generate ourselves never count as adoption. Team and test wallets are recorded and excluded from any usage figure we publish.
 
 ## Conventions a linter can't enforce
 

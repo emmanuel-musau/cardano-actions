@@ -81,6 +81,6 @@ Changesets drives versioning. A changeset accompanies every `packages/*` change;
 
 ## Environments
 
-`preprod` for all end-to-end work (issue #54 provisions wallets and provider keys; `.env.example` documents the variables). Mainnet is touched only by the deployment issues (#63, #67) and the footprint declaration that follows (#68).
+`preprod` for all end-to-end work (issue #54 provisions wallets and provider keys; `.env.example` documents the variables). Mainnet is touched only by the deployment issues (#63, #67).
 
-Team and test wallets are recorded in the footprint doc and excluded from adoption metrics under the Catalyst Transaction Integrity Standard. No transaction we generate ourselves is ever counted as adoption.
+Team and test wallets are recorded and excluded from usage figures. No transaction we generate ourselves is ever counted as adoption.

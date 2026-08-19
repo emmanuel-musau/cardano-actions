@@ -18,7 +18,7 @@ Mode A is the only build mode implemented in v1. The spec reserves the Mode B de
 
 ## Alternatives considered
 
-**Ship both modes in M1.** Doubles the surface of the two riskiest packages, on a 60-person-day budget where the effects engine is already the critical path. The proposal's own scope discipline says: a narrow thing that works on mainnet beats a broad thing that does not.
+**Ship both modes in M1.** Doubles the surface of the two riskiest packages while the effects engine is already the critical path. A narrow thing that works on mainnet beats a broad thing that does not.
 
 **Drop Mode B from the spec entirely.** Script-heavy dApps genuinely need it, and a spec that cannot express their case invites incompatible extensions. Specifying it while deferring implementation keeps the door open without spending the days.
 
