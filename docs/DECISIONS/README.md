@@ -1,0 +1,15 @@
+# Architecture Decision Records
+
+One file per decision, numbered in order: `NNNN-short-title.md`. Copy `0000-template.md` to start.
+
+A decision recorded here is settled. Don't relitigate it in a PR or a code review — if it needs to change, write a new ADR that supersedes it and mark the old one `Superseded by ADR-NNNN`.
+
+Write an ADR when a choice is hard to reverse, affects more than one package, or would otherwise be re-argued in three months: dependency choices, protocol shapes, security trade-offs, scope cuts. Don't write one for anything a linter or a type could have settled.
+
+| ADR | Title | Status |
+|-----|-------|--------|
+| [0001](0001-record-architecture-decisions.md) | Record architecture decisions | Accepted |
+| [0002](0002-client-side-balancing-default.md) | Client-side balancing is the only v1 build mode | Accepted |
+| [0003](0003-mirror-evolution-sdk-toolchain.md) | Mirror the evolution-sdk toolchain | Accepted |
+
+Three more are already ticketed as spikes and land here when decided: error-code taxonomy and spec versioning (#18), CBOR decode approach (#33), CIP-0170 go/no-go (#63).
