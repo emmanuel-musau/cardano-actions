@@ -1,0 +1,13 @@
+{
+  "name": "cardano-actions",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Cardano Actions — an open specification and TypeScript SDK that turns a shareable URL into a signable Cardano transaction",
+  "license": "MIT",
+  "packageManager": "pnpm@11.18.0",
+  "engines": {
+    "node": ">=22",
+    "pnpm": ">=11"
+  }
+}

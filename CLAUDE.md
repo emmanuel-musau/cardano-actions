@@ -37,6 +37,7 @@ pnpm typecheck        # tsc --noEmit
 
 - Work is driven by GitHub issues (`emmanuel-musau/cardano-actions`), ordered by dependency; respect `Depends on #N` lines. One issue = one branch = one PR. Board: https://github.com/users/emmanuel-musau/projects/1
 - Do not start an issue whose dependencies are open. Do not expand an issue's scope — file a new issue instead.
+- Branch names are `<type>/<purpose>`: the type prefix, a slash, then the purpose in kebab-case — `chore/pnpm-workspace`, `feat/ada-delta`, `fix/mismatch-block`. No issue numbers, no other punctuation. Types: `feat`, `fix`, `chore`, `docs`, `test`, `spec`, `infra`. The purpose is one or two words naming the thing, not the sentence; the issue link lives in the commit trailer and the PR.
 - Every change ships with tests in the same PR. See **Testing** below — this is not a soft preference.
 - Changeset required for any change under `packages/*`.
 - Never commit or push unless explicitly asked. Never touch `main` directly.

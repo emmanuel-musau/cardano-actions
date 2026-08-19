@@ -35,10 +35,10 @@ Do not skip commit three. Discovering a broken ESM resolution chain in week six,
 One issue = one branch = one PR.
 
 ```
-git switch -c feat/34-effects-scaffold
+git switch -c feat/effects-scaffold
 ```
 
-Branch names: `<type>/<issue-number>-<short-slug>` where type is `feat`, `fix`, `chore`, `docs`, `test`, `spec`, or `infra`.
+Branch names are `<type>/<purpose>` — the type prefix, a slash, then the purpose in kebab-case. No issue numbers, no other punctuation. Type is `feat`, `fix`, `chore`, `docs`, `test`, `spec`, or `infra`; the purpose is one or two words naming the thing: `chore/pnpm-workspace`, `feat/ada-delta`, `fix/mismatch-block`. The issue number belongs in the commit trailer and the PR body, where it actually links.
 
 **Commits** follow Conventional Commits, scoped by package where one applies:
 
