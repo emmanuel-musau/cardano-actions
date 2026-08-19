@@ -10,6 +10,7 @@ cardano-actions/
 │   ├── workflows/ci.yml       lint, typecheck, test, build on every PR
 │   ├── workflows/release.yml  Changesets → npm, manual approval before publish
 │   ├── ISSUE_TEMPLATE/        bug, feature, spec-change
+│   ├── PULL_REQUEST_TEMPLATE.md  the definition of done, as a checklist
 │   └── CODEOWNERS             spec/ and packages/effects/ route to the tech lead
 ├── spec/
 │   ├── CIP-XXXX/
@@ -36,6 +37,8 @@ cardano-actions/
 ├── eslint.config.js           ESLint flat config + Prettier
 ├── vitest.config.ts           whole suite from root; each package keeps its config
 ├── tsconfig.test.json         shared test compiler options
+├── CONTRIBUTING.md            setup, PR flow, the testing bar, changesets
+├── SECURITY.md                private reporting, scope, disclosure timeline
 └── LICENSE                    MIT
 ```
 

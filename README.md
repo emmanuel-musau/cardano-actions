@@ -2,7 +2,7 @@
 
 Turn any URL into a signable Cardano transaction. Share a link on X, WhatsApp, or a printed QR code — the recipient reviews exactly what they're signing and confirms in their own wallet. Open spec + TypeScript SDK.
 
-> **Status:** pre-alpha. The specification is being drafted and no package has shipped yet. Follow the [project board](https://github.com/users/emmanuel-musau/projects/1) for progress.
+> Developed in the open — the specification, the SDK, and the reasoning behind both. Track what is moving in [issues](https://github.com/emmanuel-musau/cardano-actions/issues).
 
 ## Why it's different
 
@@ -38,7 +38,9 @@ Plus `apps/interstitial` (hosted, self-hostable fallback page) and `examples/ada
 | [docs/WORKFLOW.md](docs/WORKFLOW.md) | board process, branching, commits, definition of done |
 | [docs/DECISIONS/](docs/DECISIONS/) | architecture decision records |
 | [docs/GLOSSARY.md](docs/GLOSSARY.md) | Cardano and protocol terms as used here |
-| [spec/](spec/) | the CIP draft |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | setup, branch and PR conventions, the testing bar, changesets |
+| [SECURITY.md](SECURITY.md) | what counts as a vulnerability here, and how to report one privately |
+| [spec/](spec/) | the CIP: request and response shapes, error codes, resolution rules |
 
 ## Built on
 
@@ -50,4 +52,4 @@ A Cardano Catalyst Pilot project. The specification is submitted to `cardano-fou
 
 ## License
 
-MIT
+MIT — see [LICENSE](LICENSE).

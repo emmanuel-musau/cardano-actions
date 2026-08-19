@@ -1,0 +1,86 @@
+name: Bug report
+description: Something behaves differently from what the docs or the spec say it should.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Not for security issues.** If a transaction's real effects can differ
+        from what a user was shown, or a mismatch failed to block signing, do
+        not file it here — use
+        [private vulnerability reporting](https://github.com/emmanuel-musau/cardano-actions/security/advisories/new),
+        and see [SECURITY.md](https://github.com/emmanuel-musau/cardano-actions/blob/main/SECURITY.md)
+        for scope.
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Where
+      description: Best guess is fine.
+      options:
+        - "@cardano-actions/core"
+        - "@cardano-actions/effects"
+        - "@cardano-actions/server"
+        - "@cardano-actions/identity"
+        - "@cardano-actions/client"
+        - apps/interstitial
+        - examples/adalink
+        - spec
+        - repo tooling (CI, build, lint)
+        - not sure
+    validations:
+      required: true
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What you observed, including the exact error code or message if there was one.
+    validations:
+      required: true
+
+  - type: textarea
+    id: what-expected
+    attributes:
+      label: What should have happened
+      description: Where possible, point at the line in the spec or docs that says so.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction
+      description: |
+        Steps, or a minimal snippet. A failing test is the most useful form
+        this can take — it becomes the regression test for the fix.
+      render: shell
+    validations:
+      required: true
+
+  - type: textarea
+    id: transaction
+    attributes:
+      label: Transaction CBOR and action URL
+      description: |
+        If a transaction was involved, paste the hex-encoded transaction body
+        and the action URL that produced it. Redact anything you do not want
+        public — but note that a transaction which should have been blocked
+        and wasn't becomes a permanent test case, so the CBOR is the single
+        most valuable thing in this report.
+      render: text
+
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: Node and package versions, wallet, and network.
+      placeholder: node 22.22.0 · @cardano-actions/effects 0.1.0 · Lace · preprod
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I searched existing issues and this is not already reported.
+          required: true

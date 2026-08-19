@@ -1,0 +1,29 @@
+# Review routing.
+#
+# GitHub only honours an owner with write access to this repository. An
+# unknown handle, or one with read access only, is silently ignored — the
+# rule stops applying and nothing warns you. Verify access before adding
+# anyone here.
+#
+# Every path below currently resolves to the same person, because the repo
+# has one collaborator. The paths are still split by risk: when a second
+# maintainer joins, the split is already correct and only the handles change.
+
+# Default owner for anything not matched below.
+*                     @emmanuel-musau
+
+# The security engine and the protocol text.
+#
+# A wrong derivation in `effects` means a user signs a transaction that does
+# something other than what they were shown — the one failure this project
+# exists to prevent. A silent edit to `spec/` breaks every implementation
+# built against it. Neither should ever merge on a default review.
+/spec/                @emmanuel-musau
+/packages/effects/    @emmanuel-musau
+
+# The gates themselves. Weakening CI or the lint rules should be a
+# deliberate, reviewed change, not something that rides along inside an
+# unrelated PR.
+/.github/workflows/   @emmanuel-musau
+/eslint.config.js     @emmanuel-musau
+/turbo.json           @emmanuel-musau

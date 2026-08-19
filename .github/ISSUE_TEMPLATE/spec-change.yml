@@ -1,0 +1,71 @@
+name: Spec change
+description: Propose a change to the protocol shapes, error codes, or resolution rules in spec/.
+labels: ["spec"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        `spec/` is a versioned contract that other implementations build
+        against. A change means a spec PR first, a version bump, and matching
+        `core` schema and test updates in the same change — never a silent
+        edit to a shape packages already implement.
+
+        Open this issue before writing the PR, so the shape is agreed before
+        anyone implements against it.
+
+  - type: input
+    id: surface
+    attributes:
+      label: What part of the spec
+      placeholder: GET response `links.actions[].parameters[]`, or error code CA-4xx
+    validations:
+      required: true
+
+  - type: textarea
+    id: current
+    attributes:
+      label: Current shape or behaviour
+      description: Quote it from `spec/` so the diff is unambiguous.
+      render: json
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed
+    attributes:
+      label: Proposed shape or behaviour
+      render: json
+    validations:
+      required: true
+
+  - type: textarea
+    id: why
+    attributes:
+      label: Why this can't be done within the current shape
+      description: |
+        The bar for changing a contract is higher than for adding to one.
+        Explain what is impossible today, not what would be more convenient.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: breaking
+    attributes:
+      label: Is this breaking for existing endpoints or clients
+      options:
+        - "No — additive, existing payloads stay valid"
+        - "Yes — existing payloads become invalid"
+        - Unsure
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: >-
+            I understand this needs a PR against `spec/` first, with the
+            version bump and the `core` schema and test updates in the same
+            change.
+          required: true

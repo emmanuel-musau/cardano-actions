@@ -1,0 +1,14 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Report a security vulnerability
+    url: https://github.com/emmanuel-musau/cardano-actions/security/advisories/new
+    about: >-
+      Never file a vulnerability as a public issue — especially one where a
+      transaction's real effects can differ from what the user was shown.
+      SECURITY.md has the scope and what to include.
+  - name: Open issues
+    url: https://github.com/emmanuel-musau/cardano-actions/issues
+    about: What is already tracked, in dependency order. Check here before proposing work.
+  - name: Contributing guide
+    url: https://github.com/emmanuel-musau/cardano-actions/blob/main/CONTRIBUTING.md
+    about: Setup, branch and PR conventions, the testing bar, and changesets.
