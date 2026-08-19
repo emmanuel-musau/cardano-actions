@@ -1,0 +1,68 @@
+name: Feature request
+description: Propose new functionality or a change to how something works.
+labels: ["feat"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Work here is board-driven and ordered by dependency, so a proposal is
+        more likely to land as a scheduled issue than as an immediate change.
+        Describing the problem well matters more than specifying the solution.
+
+        If this would change a request or response **shape** defined in
+        `spec/`, use the **Spec change** template instead — those are a
+        versioned contract other implementations depend on.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: |
+        What can't you do today, and what are you doing instead? Write this
+        without naming a solution.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: What you would build, and roughly what the API or UI would look like.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Including doing nothing, and why that is not enough.
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Where it belongs
+      options:
+        - "@cardano-actions/core"
+        - "@cardano-actions/effects"
+        - "@cardano-actions/server"
+        - "@cardano-actions/identity"
+        - "@cardano-actions/client"
+        - apps/interstitial
+        - examples/adalink
+        - repo tooling (CI, build, lint)
+        - not sure
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: invariants
+    attributes:
+      label: Before submitting
+      options:
+        - label: I searched existing issues and the project board, and this is not already tracked.
+          required: true
+        - label: >-
+            This does not require holding user funds, sending the user's UTxO
+            set to an action endpoint, or overriding a metadata/effects
+            mismatch. Those are settled constraints, not open trade-offs.
+          required: true
