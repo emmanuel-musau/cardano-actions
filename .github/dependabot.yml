@@ -1,0 +1,102 @@
+# Automated dependency currency. `@evolution-sdk/evolution` and Effect both
+# move fast; a dependency left alone for a quarter stops being a one-line bump
+# and becomes an afternoon.
+#
+# Dependabot rather than Renovate: it is native to GitHub, so there is no app
+# to install and no third party holding write access to this repository.
+#
+# Nothing here merges anything. Dependabot opens pull requests; they go
+# through the same required checks as any other PR (lint, typecheck, test,
+# build) and a human merges them. Auto-merge is deliberately not configured —
+# neither in this file, which cannot express it, nor as a workflow that would.
+#
+# This file only takes effect once it is on the default branch.
+version: 2
+
+updates:
+  # One npm entry for the whole workspace, not one per package. Dependabot
+  # reads `pnpm-workspace.yaml` at the root and updates every package manifest
+  # against the single root `pnpm-lock.yaml`. Splitting the same pnpm workspace
+  # across several `directory` entries is a known way to get pull requests that
+  # edit a manifest and leave the root lockfile untouched (dependabot-core
+  # #11135) — which then fails `pnpm install --frozen-lockfile` in CI.
+  - package-ecosystem: npm
+    directory: /
+
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: Africa/Nairobi
+
+    # A batch to review on Monday, not a trickle through the week. Everything
+    # that moves within its major arrives as one pull request. Majors are left
+    # out of the group on purpose: each gets its own PR, its own CI run, and
+    # its own read of the changelog, because each can break the build in a way
+    # a grouped diff would hide.
+    groups:
+      npm:
+        patterns: ["*"]
+        update-types:
+          - minor
+          - patch
+
+    # Declared ranges stay as wide as they were written. `increase` would
+    # ratchet every `^` floor on each bump, and for the four packages we
+    # publish that forces a resolution on consumers for no reason we can name.
+    versioning-strategy: increase-if-necessary
+
+    # How long a release must survive before we are offered it. Recent npm
+    # supply-chain compromises were caught within days of publish, and nothing
+    # in this repository is urgent enough to be the first install of a new
+    # version. Security updates ignore cooldown, which is the point of having
+    # it only here.
+    cooldown:
+      default-days: 5
+      semver-major-days: 14
+
+    open-pull-requests-limit: 5
+
+    # `infra` exists in this repository; labels that do not exist are silently
+    # ignored, so the list is kept to the repo's own taxonomy.
+    labels:
+      - infra
+
+    # Conventional Commits, as docs/WORKFLOW.md requires: `chore(deps): …` and
+    # `chore(deps-dev): …`.
+    commit-message:
+      prefix: chore
+      include: scope
+
+  # Workflows pin actions by major tag. Without this entry they quietly rot on
+  # whatever major they were written against — including the ones that publish
+  # to npm.
+  - package-ecosystem: github-actions
+    directory: /
+
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: Africa/Nairobi
+
+    groups:
+      actions:
+        patterns: ["*"]
+        update-types:
+          - minor
+          - patch
+
+    # No `cooldown` here. The key is rejected for this ecosystem and an invalid
+    # key does not degrade to a warning — it invalidates the whole file, taking
+    # the npm updates above down with it. Actions still get GitHub's own
+    # three-day default.
+
+    open-pull-requests-limit: 5
+
+    labels:
+      - infra
+
+    commit-message:
+      prefix: ci
+      include: scope
