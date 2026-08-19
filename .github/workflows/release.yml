@@ -1,0 +1,100 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+
+# Read-only by default; each job asks for exactly what it needs. Publishing is
+# the only thing in this repository that can write outside the repository, so
+# the grant is per job rather than per workflow.
+permissions:
+  contents: read
+
+concurrency:
+  group: release
+  # Never cancelled. A half-finished publish leaves some packages on npm and
+  # some not, and npm versions cannot be reused — the cost of a wasted run is
+  # a minute, the cost of a torn release is permanent.
+  cancel-in-progress: false
+
+jobs:
+  # Two jobs, not one, because publishing needs the `npm` environment and its
+  # OIDC identity, and versioning must not run with them.
+  version:
+    name: version PR
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # push the version commit
+      pull-requests: write # open/update the version PR
+    outputs:
+      mode: ${{ steps.mode.outputs.mode }}
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # Changesets reads history to work out what changed since the tag.
+          fetch-depth: 0
+
+      - uses: pnpm/setup@v2
+        with:
+          runtime: node@22
+          cache: true
+          install: false
+
+      - run: pnpm install --frozen-lockfile
+
+      # `version` when changesets are pending, `publish` when none are and
+      # there are publishable packages, `none` otherwise.
+      - uses: changesets/action/select-mode@v2.1.1
+        id: mode
+
+      - if: steps.mode.outputs.mode == 'version'
+        uses: changesets/action/version@v2.1.1
+        with:
+          script: pnpm version:packages
+          commit-message: "chore: version packages"
+          pr-title: "chore: version packages"
+        env:
+          # Read by @changesets/changelog-github, which resolves each
+          # changeset's commit to its PR and author. Without it `changeset
+          # version` throws — the action's own token input does not reach the
+          # version script.
+          GITHUB_TOKEN: ${{ github.token }}
+
+  publish:
+    name: publish
+    needs: version
+    # Reached only once the version PR has been merged and no changesets
+    # remain. Merging that PR is the release decision — it shows the exact
+    # version bumps and changelog entries being shipped — so there is no
+    # second approval here.
+    if: needs.version.outputs.mode == 'publish'
+    runs-on: ubuntu-latest
+    # Scopes the npm trusted-publisher relationship: npm can be configured to
+    # mint a publish token only for runs of this workflow in this environment,
+    # and the environment is restricted to main. It carries no reviewers.
+    environment: npm
+    permissions:
+      contents: write # push tags, create GitHub releases
+      id-token: write # OIDC token for npm trusted publishing
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - uses: pnpm/setup@v2
+        with:
+          runtime: node@22
+          cache: true
+          install: false
+
+      - run: pnpm install --frozen-lockfile
+
+      # No NPM_TOKEN. Authentication is npm trusted publishing over OIDC —
+      # changesets/action v2 removed its .npmrc token handling, and a
+      # long-lived publish token in a secret is the thing worth not having.
+      # Provenance attestations are generated automatically on this path.
+      - uses: changesets/action/publish@v2.1.1
+        with:
+          script: pnpm release

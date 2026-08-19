@@ -8,7 +8,7 @@ How the pieces fit, what each package owns, and the dependency rules that keep t
 cardano-actions/
 ├── .github/
 │   ├── workflows/ci.yml       lint, typecheck, test, build on every PR
-│   ├── workflows/release.yml  Changesets → npm, manual approval before publish
+│   ├── workflows/release.yml  Changesets → version PR, then npm on merge
 │   ├── ISSUE_TEMPLATE/        bug, feature, spec-change
 │   ├── PULL_REQUEST_TEMPLATE.md  the definition of done, as a checklist
 │   └── CODEOWNERS             spec/ and packages/verifier/ route to the tech lead

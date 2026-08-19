@@ -12,8 +12,10 @@
   },
   "scripts": {
     "build": "turbo run build",
-    "typecheck": "turbo run typecheck",
-    "test": "turbo run test",
+    "typecheck": "turbo run typecheck //#typecheck:repo",
+    "typecheck:repo": "tsc -p test/tsconfig.json",
+    "test": "turbo run test //#test:repo",
+    "test:repo": "vitest run --project repo",
     "test:watch": "vitest",
     "coverage": "turbo run test -- --coverage",
     "lint": "turbo run lint //#lint:root //#format:check",
@@ -21,9 +23,14 @@
     "lint:fix": "turbo run lint //#lint:root -- --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "clean": "turbo run clean && rm -rf .turbo"
+    "clean": "turbo run clean && rm -rf .turbo",
+    "changeset": "changeset",
+    "version:packages": "changeset version && pnpm install --lockfile-only",
+    "release": "turbo run build --filter='./packages/*' && changeset publish"
   },
   "devDependencies": {
+    "@changesets/changelog-github": "^1.0.0",
+    "@changesets/cli": "^3.0.0",
     "@eslint/js": "^10.0.1",
     "@types/node": "^26.2.0",
     "@vitest/coverage-v8": "^4.1.11",

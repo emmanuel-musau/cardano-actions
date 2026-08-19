@@ -128,7 +128,34 @@ surface, `major` for a break. Write the summary for someone reading a
 changelog, not for a reviewer reading the diff. Packages version and publish
 independently: a fix in `verifier` must not force a `flow` release.
 
-Changes outside `packages/*` — docs, CI, tooling — do not need one.
+Changes outside `packages/*` — docs, CI, tooling — do not need one. Neither do
+test-only changes inside a package: they change nothing a consumer installs.
+
+CI checks this. A PR that touches a package without a changeset fails the
+`changeset` job, which runs `changeset status` against the base branch.
+
+## Releasing
+
+Maintainers only. Nothing about it is manual beyond one merge.
+
+Every push to `main` runs `.github/workflows/release.yml`. If changesets are
+pending, it opens or updates a **chore: version packages** PR holding the
+version bumps and CHANGELOG entries those changesets produce. Merging that PR
+is the release decision — you are looking at the exact versions and the exact
+changelog about to ship. On merge, no changesets remain, and the same workflow
+publishes to npm, pushes tags, and creates the GitHub releases.
+
+Authentication is [npm trusted publishing](https://docs.npmjs.com/trusted-publishers):
+the job mints a short-lived credential over OIDC from the `npm` environment.
+There is no publish token in this repository's secrets, and provenance
+attestations — proof that a tarball was built from this commit by this
+workflow — are generated automatically.
+
+One-time setup per package, before its first release: the npm scope must exist
+and the package must have a trusted publisher pointing at this repository,
+`release.yml`, and the `npm` environment.
+
+Packages start at `0.x`. Until `1.0.0`, a breaking change is a `minor` bump.
 
 ## Changing the specification
 
