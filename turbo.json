@@ -30,6 +30,26 @@
       "outputs": []
     },
 
+    // Root-level sources are in no workspace package, so `turbo run lint`
+    // would skip them entirely — eslint.config.js and vitest.config.ts would
+    // go unlinted, and CI would be green having checked nothing. These two
+    // `//#` tasks run against the repo root and are invoked by `pnpm lint`
+    // alongside the per-package task.
+    "//#lint:root": {
+      "inputs": ["eslint.config.js", "*.ts", "*.js", "*.mjs", "*.cjs"],
+      "outputs": []
+    },
+
+    // Deliberately uncached. Prettier reads the whole tree — every md, json,
+    // yaml and source file in and out of the packages — and an `inputs` glob
+    // that drifts out of sync with that would serve a cached pass for files
+    // it never looked at. A false green on formatting is worse than the
+    // second this takes.
+    "//#format:check": {
+      "cache": false,
+      "outputs": []
+    },
+
     "clean": {
       "cache": false
     }
