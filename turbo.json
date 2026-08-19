@@ -13,7 +13,7 @@
     },
 
     // `^build` is not optional here: NodeNext resolves a workspace dependency
-    // through its emitted .d.ts, so typechecking `client` requires `core` to
+    // through its emitted .d.ts, so typechecking `flow` requires `core` to
     // have been built. Same reason `test` waits on it.
     "typecheck": {
       "dependsOn": ["^build"],

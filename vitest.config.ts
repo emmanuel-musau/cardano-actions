@@ -4,7 +4,7 @@ export default defineConfig({
   test: {
     // Vitest 4 replaced `vitest.workspace.ts` with `test.projects`. Each glob
     // entry is a project root; a package's own vitest.config.ts wins for
-    // anything it sets (jsdom for `client`, longer timeouts for `effects`).
+    // anything it sets (jsdom for `flow`, longer timeouts for `verifier`).
     projects: ["packages/*", "apps/*"],
 
     // Explicit imports from "vitest" rather than globals: the base tsconfig

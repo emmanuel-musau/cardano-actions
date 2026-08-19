@@ -14,7 +14,7 @@ Mode B hands a third-party server the user's entire UTxO set — a fingerprint o
 
 ## Decision
 
-Mode A is the only build mode implemented in v1. The spec reserves the Mode B declaration field in the GET response and specifies that servers MUST declare Mode B and clients MUST warn before using it, but neither `server` nor `client` implements it in M1. Mode B is roadmap.
+Mode A is the only build mode implemented in v1. The spec reserves the Mode B declaration field in the GET response and specifies that servers MUST declare Mode B and clients MUST warn before using it, but neither `server` nor `flow` implements it in M1. Mode B is roadmap.
 
 ## Alternatives considered
 

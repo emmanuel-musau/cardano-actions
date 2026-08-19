@@ -37,7 +37,7 @@ Roughly in order of how much we want to hear about it:
 1. **A metadata/effects mismatch that does not block signing.** Any transaction
    whose declared metadata lies about what it does, which the client would let
    a user sign. This is the top of the list by a wide margin.
-2. **Wrong derivation in `packages/effects`** — CBOR decoded into incorrect ADA
+2. **Wrong derivation in `packages/verifier`** — CBOR decoded into incorrect ADA
    deltas, fees, validity intervals, certificates, or multi-asset movements;
    change misattributed to the wrong party; a value movement not surfaced at
    all.
@@ -48,7 +48,7 @@ Roughly in order of how much we want to hear about it:
    payload the schema should reject.
 5. **Attestation handling in `identity`** — an absent, invalid, or expired
    CIP-0170 attestation rendering as verified.
-6. **Signing and submission flow in `client` / `apps/interstitial`** — a
+6. **Signing and submission in `flow` / `apps/interstitial`** — a
    witness set assembled into a body other than the one displayed, a
    rebuild-and-retry that changes effects without re-showing them, or a
    submitted transaction that differs from the approved one.
@@ -79,8 +79,8 @@ explanation of what the client shows versus what it actually does is enough.
 ## Supported versions
 
 Security fixes land on `main` and ship in the next release of each affected
-package. Packages version and publish independently, so a fix in `effects`
-never waits on a `client` release.
+package. Packages version and publish independently, so a fix in `verifier`
+never waits on a `flow` release.
 
 | Version | Supported |
 | --- | --- |
@@ -111,7 +111,7 @@ than leave it ambiguous.
 ## Every valid report becomes a permanent test
 
 A transaction that should have been blocked and wasn't is added to the
-adversarial corpus in `packages/effects` as a regression test, and it stays
+adversarial corpus in `packages/verifier` as a regression test, and it stays
 there. That is the most durable form the fix can take — it means the same class
 of transaction can never quietly start passing again.
 

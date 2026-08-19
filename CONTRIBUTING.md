@@ -98,7 +98,7 @@ ticket, not a TODO, not "covered by the integration test later".
 
 - Tests ship in the **same PR** as the code.
 - Write the test first wherever the behaviour is specifiable — for `core`,
-  `effects`, and `server`, the expected input and output are knowable before
+  `verifier`, and `server`, the expected input and output are knowable before
   the implementation exists. Bug fixes always start with a test that reproduces
   the bug.
 - The new behaviour needs a test **that would fail without it**. A happy-path
@@ -110,7 +110,7 @@ ticket, not a TODO, not "covered by the integration test later".
 - Mock the network and the wallet. Never mock CBOR decoding, effects
   derivation, or schema validation; those are the behaviour under test.
 
-`packages/effects` carries the highest bar. Its adversarial corpus grows with
+`packages/verifier` carries the highest bar. Its adversarial corpus grows with
 every bug: **any transaction that should have been blocked and wasn't becomes a
 permanent test case.** If you find one, the test case is the most valuable half
 of the contribution.
@@ -126,7 +126,7 @@ pnpm changeset
 Pick the affected packages and a bump — `patch` for a fix, `minor` for new
 surface, `major` for a break. Write the summary for someone reading a
 changelog, not for a reviewer reading the diff. Packages version and publish
-independently: a fix in `effects` must not force a `client` release.
+independently: a fix in `verifier` must not force a `flow` release.
 
 Changes outside `packages/*` — docs, CI, tooling — do not need one.
 
@@ -144,9 +144,9 @@ bump plus the `core` schema and test updates in the same change. Use the
 These are invariants, not preferences. A PR that breaks one is wrong even when
 the ticket asked for it — raise the conflict on the issue instead.
 
-1. `packages/effects` stays a pure function of the transaction CBOR, the
+1. `packages/verifier` stays a pure function of the transaction CBOR, the
    declared metadata, and the user's addresses. It must not import from
-   `client`, `server`, or any network layer.
+   `flow`, `server`, or any network layer.
 2. The client never sends the user's UTxO set to an action endpoint.
 3. A metadata/effects mismatch always hard-blocks signing. No override paths,
    no allowlists, no "advanced user" escape hatch.

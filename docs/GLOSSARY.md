@@ -10,7 +10,7 @@ Terms used throughout the spec, issues, and code. Cardano-specific meanings, not
 
 **Balancing** — selecting inputs, computing change, and setting the fee so a transaction is valid. On eUTxO somebody must do it; we do it client-side (see ADR-0002).
 
-**CBOR** — the binary encoding of Cardano transactions. The effects engine decodes it to derive what a transaction actually does.
+**CBOR** — the binary encoding of Cardano transactions. The `verifier` decodes it to derive what a transaction actually does.
 
 **Certificate** — a transaction component performing a staking operation: stake registration (with a refundable deposit), deregistration, or delegation to a pool.
 
@@ -26,7 +26,7 @@ Terms used throughout the spec, issues, and code. Cardano-specific meanings, not
 
 **Deposit** — refundable ADA locked by certain certificates, notably stake key registration (2 ADA). Shown separately from fees in the effects panel because the user gets it back.
 
-**Derived effects** — what the effects engine computes from a transaction body: ADA delta, per-asset deltas, fee, certificates, withdrawals, mint/burn, validity interval. Arithmetic, not simulation.
+**Derived effects** — what the `verifier` computes from a transaction body: ADA delta, per-asset deltas, fee, certificates, withdrawals, mint/burn, validity interval. Arithmetic, not simulation.
 
 **Determinism** — on Cardano a transaction body fully determines its own effects and fee before submission. The property the entire security model rests on, and the one an account-model chain cannot copy.
 
