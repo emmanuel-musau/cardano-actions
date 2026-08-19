@@ -21,7 +21,7 @@ Never mention Claude, Anthropic, or any AI tool anywhere in this repository's ou
 
 ## Stack
 
-pnpm workspaces + Turborepo · TypeScript strict ESM (`NodeNext`) · Effect · Vitest · ESLint 9 flat config + Prettier · Changesets · MIT. Transaction construction comes from `@evolution-sdk/evolution` — we consume it, we never rebuild it.
+pnpm workspaces + Turborepo · TypeScript strict ESM (`NodeNext`) · Effect · Vitest · ESLint flat config + Prettier · Changesets · MIT. Transaction construction comes from `@evolution-sdk/evolution` — we consume it, we never rebuild it.
 
 ## Commands (valid once scaffolding issues #1–#6 land)
 

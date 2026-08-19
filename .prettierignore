@@ -1,0 +1,12 @@
+node_modules/
+dist/
+build/
+coverage/
+.turbo/
+.tsbuildinfo/
+pnpm-lock.yaml
+
+# Docs and the spec are hand-authored prose. Prettier reflows tables and
+# wraps sentences in ways that bury real edits under formatting churn, so
+# markdown stays out of the formatter's reach — it is reviewed by reading it.
+*.md
