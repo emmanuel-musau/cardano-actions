@@ -18,6 +18,18 @@ Issues: `emmanuel-musau/cardano-actions` · Board: https://github.com/users/emma
 
 **Milestones.** `M1-Foundation` → `M1-Protocol` → `M1-Effects` → `M1-Client` → `M1-Integration` → `M1-Delivery`.
 
+## Scaffolding order
+
+The first three commits go in this order, and the third is the one people skip:
+
+| # | Commit | Why here |
+|---|---|---|
+| 1 | Root scaffolding — `package.json`, `pnpm-workspace.yaml`, `turbo.json`, `tsconfig.base.json`, `eslint.config.js` | Nothing else builds correctly until the workspace resolves. |
+| 2 | `LICENSE`, `README`, CI workflow, issue templates, `CODEOWNERS` | Establishes the repo as public and contributable from commit two, not as an afterthought. |
+| 3 | `packages/core` with one passing test | Proves the toolchain end to end — workspace resolution, TypeScript, Vitest, Turborepo caching, CI — before anything real is built on top of it. |
+
+Do not skip commit three. Discovering a broken ESM resolution chain in week six, with the effects engine half-written on top of it, costs days.
+
 ## Branch, commit, PR
 
 One issue = one branch = one PR.
@@ -45,8 +57,10 @@ Refs #36
 An issue is done when:
 
 - Every acceptance-criteria checkbox on the issue is ticked.
-- Tests ship in the same PR as the code — testing is never deferred to a later ticket unless the backlog explicitly carves one out.
-- CI is green: lint, typecheck, test, build.
+- **Tests ship in the same PR as the code.** Not a follow-up ticket, not a TODO, not "covered by the integration test later". An issue whose acceptance criteria forgot to mention tests still needs them.
+- **The new behaviour actually has a test that would fail without it.** Coverage that only exercises the happy path is not done — the rejection cases, the error codes, and the invariants each need a case.
+- **No test was weakened to get here.** No deleted assertions, loosened matchers, `skip`, or `todo` added to make CI pass. If an existing test now fails, the PR says which is wrong — the code or the expectation — and fixes that.
+- CI is green: lint, typecheck, test, build. Green means the suite ran in full, not that it was skipped.
 - A changeset is included for any change under `packages/*`.
 - Docs are updated when behaviour a user or integrator sees has changed.
 - Nothing in scope was silently expanded. New scope becomes a new issue.

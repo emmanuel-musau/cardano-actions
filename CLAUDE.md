@@ -37,9 +37,32 @@ pnpm typecheck        # tsc --noEmit
 
 - Work is driven by GitHub issues (`emmanuel-musau/cardano-actions`), ordered by dependency; respect `Depends on #N` lines. One issue = one branch = one PR. Board: https://github.com/users/emmanuel-musau/projects/1
 - Do not start an issue whose dependencies are open. Do not expand an issue's scope — file a new issue instead.
-- Every package change ships with tests in the same PR; testing is never deferred to a later ticket except where the backlog explicitly says so.
+- Every change ships with tests in the same PR. See **Testing** below — this is not a soft preference.
 - Changeset required for any change under `packages/*`.
 - Never commit or push unless explicitly asked. Never touch `main` directly.
+
+## Testing — treat this as a first-class requirement
+
+Testing is not a phase, a follow-up ticket, or something the human adds afterwards. **Code without tests is not finished work here, and proposing it as finished is a mistake.**
+
+- **Write tests in the same PR as the code.** Never say "tests can come later" or open a PR whose test story is a TODO. If a ticket's acceptance criteria omit tests, the criteria are incomplete — write them anyway.
+- **Test-first where the behaviour is specifiable.** For `core`, `effects`, and `server`, the expected input/output is knowable before the implementation exists; write the failing test first. Bug fixes always start with a test that reproduces the bug.
+- **Never weaken a test to make it pass.** Do not delete assertions, loosen a matcher, widen a tolerance, add a skip, or mark something `todo` to get CI green. If a test fails, either the code is wrong or the test encodes a stale expectation — say which, and fix that. Silently disabling a test is the worst possible outcome.
+- **Report test results honestly.** If tests fail, show the output and say so. Never describe work as done or verified when the suite is red, was not run, or was only partially run.
+- **No mocking the thing under test.** Mock the network and the wallet; never mock CBOR decoding, effects derivation, or schema validation — those are the behaviour being proved.
+
+What "tested" means per package:
+
+| Package | The bar |
+|---|---|
+| `core` | Every schema validated against both valid and malformed payloads. Every URL / `actions.json` resolution rule has a case, including the ones that must be rejected. Every error code is reachable in a test. |
+| `effects` | The highest bar in the repo. Property-style coverage of derivation arithmetic, `test/fixtures/` for known-good regressions, and `test/adversarial/` for transactions whose declared metadata lies. **Every adversarial case must be blocked, and the corpus grows with every bug** — any transaction that should have been blocked and wasn't becomes a permanent test case. |
+| `server` | `defineAction` output validated against `core` schemas; CORS, HTTP status mapping, and each spec error code exercised. |
+| `identity` | Attestation issue/resolve round-trip, plus explicit tests for invalid, expired, and absent attestations — an unverified publisher must render as unverified, never as verified. |
+| `client` | Component tests for the effects panel and the mismatch block, wallet flow tested against a stubbed CIP-30 provider, and the rebuild-and-retry path covered. |
+| apps / examples | The critical user path end-to-end. Not every pixel — the flow that must not break. |
+
+The **hard invariants below each need a test that fails if the invariant is broken.** An invariant nothing tests is a comment, not a guarantee.
 
 ## Hard invariants (violating these is a bug, whatever the ticket says)
 
