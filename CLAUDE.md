@@ -16,6 +16,7 @@ Never mention Claude, Anthropic, or any AI tool anywhere in this repository's ou
 - `docs/REQUIREMENTS.md` — product scope, protocol contract, security model, delivery scope.
 - `docs/ARCHITECTURE.md` — package layout, dependency rules, invariants.
 - `docs/WORKFLOW.md` — issue/board process, branching, PR and commit conventions.
+- `docs/ECOSYSTEM.md` — the Cardano standards we build on, extend, or deliberately leave alone. Read before claiming something doesn't exist.
 - `docs/DECISIONS/` — ADRs. Decisions recorded there are settled; do not relitigate, add a new ADR to change one.
 - `spec/` — the CIP draft. Once marked frozen (issue #21), shape changes are versioned spec changes, never silent edits.
 

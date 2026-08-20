@@ -16,7 +16,7 @@ Issues: `emmanuel-musau/cardano-actions` · Board: https://github.com/users/emma
 
 **Points.** Fibonacci, capped at 5: `1` ≈ under 2 hours (config-level) · `2` ≈ half a day · `3` ≈ one day · `5` ≈ two days. Nothing is larger. If an issue starts feeling like an 8, stop and split it into new issues rather than absorbing the overrun silently.
 
-**Milestones.** `M1-Foundation` → `M1-Protocol` → `M1-Effects` → `M1-Client` → `M1-Integration` → `M1-Delivery`.
+**Milestones.** `M1-Foundation` → `M1-Protocol` → `M1-Verifier` → `M1-Flow` → `M1-Integration` → `M1-Delivery`.
 
 ## Scaffolding order
 
@@ -35,7 +35,7 @@ Do not skip commit three. Discovering a broken ESM resolution chain in week six,
 One issue = one branch = one PR.
 
 ```
-git switch -c feat/effects-scaffold
+git switch -c feat/verifier-scaffold
 ```
 
 Branch names are `<type>/<purpose>` — the type prefix, a slash, then the purpose in kebab-case. No issue numbers, no other punctuation. Type is `feat`, `fix`, `chore`, `docs`, `test`, `spec`, or `infra`; the purpose is one or two words naming the thing: `chore/pnpm-workspace`, `feat/ada-delta`, `fix/mismatch-block`. The issue number belongs in the commit trailer and the PR body, where it actually links.
@@ -43,7 +43,7 @@ Branch names are `<type>/<purpose>` — the type prefix, a slash, then the purpo
 **Commits** follow Conventional Commits, scoped by package where one applies:
 
 ```
-feat(effects): derive net ADA delta and exact fee
+feat(verifier): derive net ADA delta and exact fee
 
 Refs #36
 ```

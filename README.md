@@ -44,7 +44,7 @@ Plus `apps/interstitial` (hosted, self-hostable fallback page) and `examples/ada
 
 ## Built on
 
-[`@evolution-sdk/evolution`](https://github.com/IntersectMBO/evolution-sdk) for transaction construction, CIP-30 for signing, CIP-13 for routing, CIP-0170 for publisher identity. This extends the ecosystem's own standards rather than replacing them.
+[`@evolution-sdk/evolution`](https://github.com/IntersectMBO/evolution-sdk) for transaction construction, CIP-30 for signing, CIP-13 for routing, a `.well-known` publisher manifest for identity with CIP-0170 above it for legal-entity assurance. This extends the ecosystem's own standards rather than replacing them.
 
 ## Standardisation
 

@@ -22,7 +22,7 @@ cardano-actions/
 │   ├── core/                  types, URL resolution, actions.json, validation
 │   ├── verifier/              CBOR decode → deltas. The security engine.
 │   ├── server/                defineAction() + Next.js adapter
-│   ├── identity/              CIP-0170 attestation issue + resolve (signify-ts)
+│   ├── identity/              publisher attestation: domain manifest + CIP-0170
 │   └── flow/                  React components + CIP-30 orchestration
 ├── apps/
 │   ├── interstitial/          hosted + self-hostable fallback page
@@ -90,15 +90,24 @@ Then compares derived effects against declared metadata and returns `match | mis
 | `derive.ts` | Diffs inputs against outputs for the user's addresses → ADA delta, per-policy asset deltas, exact fee, certificates, withdrawals, mint/burn, validity interval |
 | `deposits.ts` | Separates refundable deposits (stake registration's 2 ADA) from spent value. Showing a deposit as a cost is wrong; hiding it is worse. |
 | `compare.ts` | Derived vs declared → verdict. This function is what blocks a signature. |
-| `test/fixtures/` | ~50 known-good transactions with expected outputs. Regression safety. |
+| `test/fixtures/` | ~50 known-good transactions with expected outputs. Regression safety. Seeded from CIP-0186's published vectors for Conway tx-body extraction and commit computation, so those behaviours are checked against an oracle three wallets already agree on. |
 | `test/adversarial/` | **The proof artefact.** Transactions whose declared metadata contradicts what they do — hidden outputs, wrong pool, inflated fee, unexpected mint. Public, and the strongest single piece of evidence that the security claim holds. |
 
 Deliberately consumable standalone: a wallet or an explorer should be able to use `verifier` without adopting the rest of the protocol. That reusability is an argument in the CIP.
 
 ### `identity`
-CIP-0170 attestation issuance and resolution via `signify-ts`. A publisher binds their domain to their endpoints; clients resolve and display verified identity.
+Publisher attestation: issue and resolve, in two tiers (REQUIREMENTS §5).
 
-**Why it is its own package.** CIP-0170 is the piece most likely to be cut at the Month 1 go/no-go — it is pre-production and new to the team. As a separate package, cutting it means deleting a dependency line; folded into `flow`, cutting it means untangling code under time pressure. This split is a scope-risk hedge, not an architectural preference.
+| Tier | Mechanism | What the client renders |
+|---|---|---|
+| 1 | Signed manifest at `https://<domain>/.well-known/cardano-actions.json`, binding the domain to the endpoints it vouches for. No chain write. | published by `<domain>`, domain-verified |
+| 2 | CIP-0170 KERI `ATTEST` — digest of the Tier-1 manifest anchored in the issuer's KEL, referenced in tx metadata label `170`, chained to a vLEI-grade entity via `signify-ts` | published by `<legal entity>`, identity-verified |
+
+Tier 2 sits on top of Tier 1 rather than beside it: the manifest is the payload being attested, and Tier 1 is also what supplies domain→AID discovery, which CIP-0170 does not define. The manifest shape follows CIP-0186's origin-anchored `.well-known/cip30dl-attestation.json` precedent — same trust anchor, same 24h cache posture — so a wallet team reading both sees one pattern.
+
+Resolution is read-only and cacheable; issuance is a publisher-side operation and never runs in the browser path. Every resolve outcome — absent, malformed, expired, revoked, valid — is a distinct rendered state, and only the last one says verified. There is no code path in which a failed resolve degrades into a verified badge.
+
+**Why it is its own package.** Tier 2 is the piece most likely to be cut at the Month 1 go/no-go — it is pre-production, new to the team, and its verification path depends on KEL availability the CIP itself calls immature. As a separate package, cutting it means deleting a dependency line; folded into `flow`, it means untangling code under time pressure. This split is a scope-risk hedge, not an architectural preference — and it is why the tiers are separable at all.
 
 ### `flow`
 CIP-30 orchestration plus React components. Wallet discovery/enable, change address + network id, local balancing via `@evolution-sdk/evolution` against the user's own UTxOs, effects derivation, `signTx` → witness assembly → `submitTx`, and rebuild-and-retry when UTxOs move mid-flow. Components: action card, generated parameter form, effects panel with the mismatch block, publisher chip, wallet selector, receipt, error states. Hooks (`useAction`, `useWallet`, `useEffects`) are the composable surface.
@@ -228,12 +237,14 @@ Test sources are typechecked but never emitted, so root `tsconfig.test.json` tur
 
 **Sign.** Derive effects → compare → block on mismatch, otherwise show exact effects → `signTx` (returns a **witness set**, not a signed tx) → assemble witnesses into the body → `submitTx` → receipt. On input-spent failure, rebuild from fresh UTxOs, re-derive effects, and only then re-prompt.
 
+`flow` holds a **commit** — `BLAKE2b-256(canonical-cbor(tx_body))`, which is the transaction id — for the body effects were derived from, and assembles witnesses only into that body. A rebuild yields a new commit and re-derivation. Witnesses append to `vkey_witnesses`, never replace, and a witness set carrying non-vkey material we did not expect is rejected rather than merged. Both rules come from CIP-186, which three wallet teams have implemented; adopting them costs nothing and keeps our vocabulary aligned with the transport a native mobile client would use. Invisible to endpoint authors.
+
 ## Trust model
 
 Two halves of one answer, and neither is sufficient alone:
 
 - **Effects derivation** proves *what* the transaction does. Arithmetic on the tx body, not a simulation — possible because eUTxO transactions fully determine their own effects. Mismatch hard-blocks signing.
-- **CIP-0170 attestation** proves *who* is asking. Resolved and verified client-side, rendered beside the effects. Unverified publishers are marked, not blocked — identity augments, effects gate.
+- **Publisher attestation** proves *who* is asking — a domain manifest by default, a CIP-0170 KERI credential chain where legal identity matters. Resolved and verified client-side, rendered beside the effects. Unverified publishers are marked, not blocked — identity augments, effects gate.
 
 Effects without identity leaves users approving correct transactions from unknown parties. Identity without effects is the central registry Solana needed and we are avoiding.
 

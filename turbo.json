@@ -48,8 +48,12 @@
 
     // Repo-level invariants (test/), in no workspace package — same reason
     // `//#lint:root` exists. `turbo run test` alone would never run them.
+    // `spec/**` is an input because the CIP structure is asserted in
+    // test/spec-skeleton.test.ts: without it turbo serves a cached pass over a
+    // draft it never read, which is the same false green the format:check note
+    // below refuses. Anything else these tests read from disk belongs here too.
     "//#test:repo": {
-      "inputs": ["test/**", "vitest.config.ts", ".changeset/config.json", "*/*/package.json"],
+      "inputs": ["test/**", "spec/**", "vitest.config.ts", ".changeset/config.json", "*/*/package.json"],
       "outputs": []
     },
 

@@ -81,7 +81,7 @@ Commits follow [Conventional Commits](https://www.conventionalcommits.org),
 scoped by package where one applies, and reference the issue in a trailer:
 
 ```
-feat(effects): derive net ADA delta and exact fee
+feat(verifier): derive net ADA delta and exact fee
 
 Refs #36
 ```

@@ -6,6 +6,8 @@ Distilled from the design document. This file is the product source of truth for
 
 Every on-chain action on Cardano begins with leaving the current context: navigate to a dApp, connect a wallet, find the screen, fill a form, sign. Intent forms when a link is seen and dies before the dApp loads. There is no standard way to say "here is a specific thing to do on-chain, ready to sign" in a form that travels — X, WhatsApp, Telegram, SMS, a printed QR code.
 
+Not for want of trying. CIP-13's `web+cardano:` scheme has nine registered authorities, and CIP-99 — Active, with five wallet implementations — already has wallets POST to a project's own server from a link. What none of them do is return a transaction for the user to authorise: the four that produce a transaction fix its shape in the URI, and CIP-99's server builds and signs its own. So a new kind of action means a new CIP and a per-wallet integration. See `docs/ECOSYSTEM.md`.
+
 ## 2. What we build
 
 Three deliberately separate things:
@@ -30,6 +32,8 @@ Mode B (server-side balancing, client ships UTxOs) is specified as reserved/decl
 ### Sign and submit
 Client ends with a complete unsigned tx: derive effects → show → CIP-30 `signTx` (returns a **witness set**) → assemble witnesses into the body → `submitTx`. Short validity intervals plus automatic rebuild-and-retry when UTxOs move between build and sign.
 
+The client records `BLAKE2b-256(canonical-cbor(tx_body))` — the transaction id — for the body it derived effects from, and assembles a returned witness set only into that body. A rebuild produces a new commit and re-derives effects before re-prompting. Witnesses are appended to any already present, never replacing them. This is internal to the client; endpoint authors never see it. It follows CIP-186's commit binding so the two agree on what identifies a transaction.
+
 ## 4. The effects engine — the security model
 
 The server's metadata is a claim; the transaction is the truth. Before any signature request the client independently derives from the tx CBOR:
@@ -41,15 +45,27 @@ The server's metadata is a claim; the transaction is the truth. Before any signa
 
 Derived effects are compared against declared metadata. **Any contradiction hard-blocks signing** and shows the mismatch. This is why no gatekeeping registry is needed, and it is only possible because eUTxO transactions fully determine their own effects. The public **adversarial corpus** (transactions whose metadata lies) with a proven 100% block rate is the artefact that makes this claim credible.
 
-## 5. Identity layer (CIP-0170)
+## 5. Identity layer
 
-Publishers issue KERI-backed attestations (via signify-ts) binding a domain to its action endpoints. Clients resolve and verify the attestation and display verified publisher identity beside the derived effects. Effects prove *what* happens; the attestation proves *who* is asking. Identity augments but never gates: unverified publishers are clearly marked, not blocked. Explicit go/no-go at end of Month 1 (issue #63); fallback is shipping the stablecoin action alone.
+Effects prove *what* a transaction does. Identity answers *who is asking* — and it ships in two tiers, because the assurance a regulated issuer needs and the assurance a creator posting a tip link needs are not the same thing.
+
+**Tier 1 — domain attestation (the default).** A publisher serves a signed manifest at `https://<domain>/.well-known/cardano-actions.json` binding the domain to the action endpoints it vouches for. No chain write, no credential chain, no cost to publish. The client fetches it over the same origin it already resolved `actions.json` against and renders "published by `<domain>`, domain-verified". This is the tier every publisher gets, and its shape follows the origin-anchored precedent CIP-0186 set with `.well-known/cip30dl-attestation.json` rather than inventing a new one.
+
+**Tier 2 — CIP-0170 attestation (high assurance).** A KERI `ATTEST` record anchors a digest of the publisher manifest in the issuer's KEL and publishes the reference in transaction metadata under label `170`. Through the ACDC credential chain this binds the endpoint to a legally recognised entity — vLEI-grade identity, valid only between `AUTH_BEGIN` and `AUTH_END`. Issued and resolved via `signify-ts`.
+
+**What CIP-0170 does not give us, and we therefore define.** The CIP anchors a digest of *arbitrary* data; it does not specify a publisher payload, and it has no domain→AID discovery — nothing in it answers "given `adalink.io`, which identifier should I trust?". Both are ours to write, and Tier 1 is what answers the discovery half. Verification also depends on KEL availability: CIP-0170 concedes that watcher networks are not yet widely deployed and names OOBI over a known persistent channel as the interim path. Treat that as the live risk in this layer.
+
+**Identity augments, it never gates.** A missing, invalid, expired or revoked attestation renders as unverified — visibly, at every tier. It never blocks a signature, and a verified publisher never relaxes the effects gate. The two mechanisms are independent by design: effects without identity leaves users approving correct transactions from unknown parties, and identity without effects is the central registry Solana needed and we are avoiding.
+
+Tier 1 is in M1 unconditionally. Tier 2 carries an explicit go/no-go at end of Month 1 (issue #63) — it is pre-production and new to the team. Cutting it leaves the identity layer shipping, not absent, which is the point of splitting the tiers.
 
 ## 6. M1 scope (mainnet in 3 months)
 
-**In:** spec + CIP draft; `core`; `server` with one adapter (Next.js); the `verifier` effects engine; the `flow` client SDK; hosted + self-hostable interstitial; CIP-0170 publisher attestation; AdaLink USDM/USDCx payment action live on mainnet; public adversarial corpus.
+**In:** spec + CIP draft; `core`; `server` with one adapter (Next.js); the `verifier` effects engine; the `flow` client SDK; hosted + self-hostable interstitial; Tier-1 domain publisher attestation (Tier-2 CIP-0170 subject to the Month 1 go/no-go); AdaLink USDM/USDCx payment action live on mainnet; public adversarial corpus.
 
-**Deferred (roadmap — do not build in M1):** mobile CIP-13 `//action` deep links; browser extension inline rendering; server-side balancing (Mode B); additional framework adapters; additional action types.
+**Deferred (roadmap — do not build in M1):** mobile CIP-13 `//action` deep links; a CIP-186 transport for native mobile clients; browser extension inline rendering; server-side balancing (Mode B); additional framework adapters; additional action types.
+
+On mobile, a shared link opened in a phone browser reaches a wallet through CIP-158 `//browse`, which lands the interstitial in the wallet's in-app browser where CIP-30 is injected and the desktop flow runs unchanged. CIP-186 is a separate case — the transport a *native mobile app* would use to be a client — and cannot carry the interstitial, because its source-app attestation requires an installed app. See `docs/ECOSYSTEM.md` §3.
 
 ## 7. Reference integration — AdaLink
 
