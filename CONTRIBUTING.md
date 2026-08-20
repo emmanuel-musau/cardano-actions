@@ -90,6 +90,16 @@ The PR body links the issue with `Closes #36` and ticks that issue's acceptance
 criteria. `main` is protected: PR required, CI green required, squash merge.
 Never push to `main`.
 
+PRs open with an empty body. The definition-of-done checklist lives in
+`.github/PULL_REQUEST_TEMPLATE/default.md` and is opt-in — reach for it when a
+change is large enough that the checklist earns its space:
+
+```sh
+gh pr create --template default.md
+```
+
+On the web, append `?template=default.md` to the compare URL.
+
 ## Tests are not optional
 
 This is the rule most likely to get a PR sent back, so it is worth being blunt

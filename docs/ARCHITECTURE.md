@@ -10,7 +10,7 @@ cardano-actions/
 │   ├── workflows/ci.yml       lint, typecheck, test, build on every PR
 │   ├── workflows/release.yml  Changesets → version PR, then npm on merge
 │   ├── ISSUE_TEMPLATE/        bug, feature, spec-change
-│   ├── PULL_REQUEST_TEMPLATE.md  the definition of done, as a checklist
+│   ├── PULL_REQUEST_TEMPLATE/ opt-in; default.md is the definition of done
 │   └── CODEOWNERS             spec/ and packages/verifier/ route to the tech lead
 ├── spec/
 │   ├── CIP-XXXX/
