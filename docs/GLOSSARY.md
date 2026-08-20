@@ -20,7 +20,7 @@ Terms used throughout the spec, issues, and code. Cardano-specific meanings, not
 
 **CIP-30** — the browser wallet connector. Note the detail that trips people up: `signTx` returns a **witness set**, not a signed transaction. Witnesses must be assembled into the body before `submitTx`.
 
-**CIP-0170** — KERI-backed on-chain attestations. Publishers bind a domain to its action endpoints; clients verify and display the identity. Proves *who* is asking, where effects derivation proves *what* happens.
+**CIP-0170** — KERI-backed on-chain attestations, anchoring a digest of arbitrary data in an issuer's Key Event Log and referencing it in transaction metadata. Tier 2 of the identity layer: it carries a publisher to a legally recognised entity, but defines no domain binding of its own — see **Publisher manifest**.
 
 **Collateral** — UTxOs pledged to cover fees if a script fails validation. Relevant to Mode B and script-heavy actions; out of M1 scope.
 
@@ -45,6 +45,8 @@ Terms used throughout the spec, issues, and code. Cardano-specific meanings, not
 **Policy ID** — identifies a native asset's minting policy. Asset deltas are derived per policy + asset name; USDM and USDCx are each a policy.
 
 **Preprod** — the Cardano test network used for all end-to-end work before mainnet.
+
+**Publisher manifest** — the signed `.well-known/cardano-actions.json` document binding a domain to the action endpoints it vouches for. Tier 1 of the identity layer, and the payload a CIP-0170 attestation anchors. Proves *who* is asking, where effects derivation proves *what* happens.
 
 **Reference integration** — AdaLink. Proves the SDK on a product with real users; not a library and not a template.
 

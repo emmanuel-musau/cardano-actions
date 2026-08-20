@@ -1,6 +1,6 @@
 <!--
 Title follows Conventional Commits, scoped by package where one applies:
-  feat(effects): derive net ADA delta and exact fee
+  feat(verifier): derive net ADA delta and exact fee
 -->
 
 Closes #
