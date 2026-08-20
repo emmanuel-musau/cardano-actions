@@ -20,6 +20,19 @@ Never mention Claude, Anthropic, or any AI tool anywhere in this repository's ou
 - `docs/DECISIONS/` — ADRs. Decisions recorded there are settled; do not relitigate, add a new ADR to change one.
 - `spec/` — the CIP draft. Once marked frozen (issue #21), shape changes are versioned spec changes, never silent edits.
 
+## Design (client UI)
+
+There is exactly one design sheet for the whole client UI, and it is the reference for any work that renders something a user sees:
+
+**Cardano Actions** — https://claude.ai/design/p/79057abf-f6fc-410c-9d7c-f8490d1088ea?file=Cardano+Actions.dc.html
+
+The sheet has two columns. The left column is the component system: `1 · Tokens` (colour, type, spacing, radius, the dark-surface rule, and a WCAG AA contrast audit), `2 · Action card` (states a–g), `3 · Transaction preview · anatomy`, `4 · Entering the dark`, `5 · Transaction preview · states` (a–h, including the mismatch block). The right column is the hosted interstitial — the M1 client itself: `6 · Hosted page · anatomy`, `7 · Page states` (a–h), `8 · Wallet connect`, `9 · In-wallet browser`, `10 · Chrome rules`, and `11 · Still to design`.
+
+- Take colours, type, spacing and component structure from this sheet rather than inventing them. It is one file — there is no second sheet to reconcile against.
+- `11 · Still to design` is the live list of UI that has not been drawn yet. If a ticket needs one of those surfaces, it gets designed there first; don't improvise it in code.
+- The page chrome (top bar, network indicator, effects panel, mismatch block, non-custody footer line) is **fixed and not themeable**, hosted or self-hosted; only the footer's attribution line differs. A publisher who can restyle the surface that judges them undermines the mismatch guarantee. Section 10 carries the full rule.
+- The sheet is design intent, not shipped code. Where it disagrees with `docs/REQUIREMENTS.md` or the spec, those win and the sheet gets corrected.
+
 ## Stack
 
 pnpm workspaces + Turborepo · TypeScript strict ESM (`NodeNext`) · Effect · Vitest · ESLint flat config + Prettier · Changesets · MIT. Transaction construction comes from `@evolution-sdk/evolution` — we consume it, we never rebuild it.

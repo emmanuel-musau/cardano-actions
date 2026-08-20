@@ -1,0 +1,20 @@
+{
+  "type": "action",
+  "version": "1",
+  "network": "preprod",
+  "icon": "https://linktap.example/i/builders-workshop.png",
+  "title": "Reserve a seat at the builders workshop",
+  "description": "One payment reserves one seat. Seats are released in tiers.",
+  "label": "Reserve a seat",
+  "links": {
+    "actions": [
+      { "label": "General seat — 25 USDM", "href": "/api/actions/workshop/reserve?tier=general" },
+      {
+        "label": "Front row — 75 USDM",
+        "href": "/api/actions/workshop/reserve?tier=front",
+        "disabled": true,
+        "reason": { "message": "Front row is sold out. General seats are still available." }
+      }
+    ]
+  }
+}

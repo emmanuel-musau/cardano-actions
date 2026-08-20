@@ -10,7 +10,7 @@ cardano-actions/
 │   ├── workflows/ci.yml       lint, typecheck, test, build on every PR
 │   ├── workflows/release.yml  Changesets → version PR, then npm on merge
 │   ├── ISSUE_TEMPLATE/        bug, feature, spec-change
-│   ├── PULL_REQUEST_TEMPLATE.md  the definition of done, as a checklist
+│   ├── PULL_REQUEST_TEMPLATE/ opt-in; default.md is the definition of done
 │   └── CODEOWNERS             spec/ and packages/verifier/ route to the tech lead
 ├── spec/
 │   ├── CIP-XXXX/
@@ -53,7 +53,7 @@ Shared vocabulary. Effect Schema definitions for the GET metadata response and t
 |---|---|
 | `types.ts` | `Action`, `Parameter`, `PartialIntent`, `DerivedEffects` — what a third-party implementer reads first |
 | `url.ts` | Parse, resolve, validate action URLs; the human URL → technical endpoint indirection |
-| `actions-json.ts` | Domain mapping rules, so `adalink.io/pay/kibera` resolves to `/api/actions/pay` |
+| `actions-json.ts` | Domain mapping rules, so `linktap.example/pay/corner-store` resolves to `/api/actions/pay` |
 | `errors.ts` | Typed error taxonomy — every failure mode the UI must render has a code here |
 
 Zero runtime dependencies is the goal.

@@ -19,10 +19,10 @@ Three deliberately separate things:
 ## 3. Protocol contract (v1)
 
 ### GET — discovery
-Returns: `type`, `version`, `title`, `description`, `icon`, `label`, `network`, `links.actions[]` (each with `label`, `href`, optional `parameters[]` with `name/label/type/min/max/required`). Template placeholders like `{amount}` in `href`. Unavailable actions still respond with `disabled: true` and an `error.message` — they render greyed out, never fail after the user commits.
+Returns: `type`, `version`, `title`, `description`, `icon`, `label`, `network`, `links.actions[]` (each with `label`, `href`, optional `parameters[]` with `name/label/type/min/max/required`). Template placeholders like `{amount}` in `href`. Unavailable actions still respond with `disabled: true` and an `reason.message` — they render greyed out, never fail after the user commits.
 
 ### actions.json — domain mapping
-Served from the domain root, CORS-enabled: `rules[]` of `pathPattern` → `apiPath` with `*`/`**` wildcards. Lets `adalink.io/delegate/POOL1` resolve to the real endpoint while the shared link stays human.
+Served from the domain root, CORS-enabled: `rules[]` of `pathPattern` → `apiPath` with `*`/`**` wildcards. Lets `linktap.example/delegate/POOL1` resolve to the real endpoint while the shared link stays human.
 
 ### POST — build (Mode A, client-side balancing — the v1 default and only mode)
 Request: `{ changeAddress, network }`. Response: `{ type: "partial", intent: { outputs, certificates, requiredSigners, validUntil }, message }`. The client balances locally with evolution-sdk against the user's own UTxOs. **The endpoint never sees the user's UTxO set.**
@@ -53,7 +53,7 @@ Effects prove *what* a transaction does. Identity answers *who is asking* — an
 
 **Tier 2 — CIP-0170 attestation (high assurance).** A KERI `ATTEST` record anchors a digest of the publisher manifest in the issuer's KEL and publishes the reference in transaction metadata under label `170`. Through the ACDC credential chain this binds the endpoint to a legally recognised entity — vLEI-grade identity, valid only between `AUTH_BEGIN` and `AUTH_END`. Issued and resolved via `signify-ts`.
 
-**What CIP-0170 does not give us, and we therefore define.** The CIP anchors a digest of *arbitrary* data; it does not specify a publisher payload, and it has no domain→AID discovery — nothing in it answers "given `adalink.io`, which identifier should I trust?". Both are ours to write, and Tier 1 is what answers the discovery half. Verification also depends on KEL availability: CIP-0170 concedes that watcher networks are not yet widely deployed and names OOBI over a known persistent channel as the interim path. Treat that as the live risk in this layer.
+**What CIP-0170 does not give us, and we therefore define.** The CIP anchors a digest of *arbitrary* data; it does not specify a publisher payload, and it has no domain→AID discovery — nothing in it answers "given `linktap.example`, which identifier should I trust?". Both are ours to write, and Tier 1 is what answers the discovery half. Verification also depends on KEL availability: CIP-0170 concedes that watcher networks are not yet widely deployed and names OOBI over a known persistent channel as the interim path. Treat that as the live risk in this layer.
 
 **Identity augments, it never gates.** A missing, invalid, expired or revoked attestation renders as unverified — visibly, at every tier. It never blocks a signature, and a verified publisher never relaxes the effects gate. The two mechanisms are independent by design: effects without identity leaves users approving correct transactions from unknown parties, and identity without effects is the central registry Solana needed and we are avoiding.
 

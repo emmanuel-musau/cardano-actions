@@ -1,0 +1,32 @@
+{
+  "type": "action",
+  "version": "1",
+  "network": "mainnet",
+  "icon": "https://fund.linktap.example/i/community-fund.png",
+  "title": "Contribute to the Community Fund",
+  "description": "Pick an amount and a token. The fund's address is the only recipient.",
+  "label": "Contribute",
+  "links": {
+    "actions": [
+      { "label": "Contribute 25 USDM", "href": "/api/actions/fund/community?amount=25&token=usdm" },
+      { "label": "Contribute 100 USDM", "href": "/api/actions/fund/community?amount=100&token=usdm" },
+      {
+        "label": "Contribute {amount} {token}",
+        "href": "/api/actions/fund/community?amount={amount}&token={token}",
+        "parameters": [
+          { "name": "amount", "label": "Amount", "type": "number", "min": 1, "max": 500, "required": true },
+          {
+            "name": "token",
+            "label": "Token",
+            "type": "select",
+            "required": true,
+            "options": [
+              { "label": "USDM", "value": "usdm" },
+              { "label": "USDCx", "value": "usdcx" }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
