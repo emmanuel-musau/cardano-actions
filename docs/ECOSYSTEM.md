@@ -21,7 +21,7 @@ CIP-13 defines the scheme; every extension registers an authority under it. CPS-
 | `//pay` | CIP-157 | Draft, open since 2024-06 | Payment with native assets and metadata |
 | `//action` | *ours* | Unclaimed | An arbitrary intent, built on demand by an endpoint |
 
-Every one of these except ours fixes the transaction shape in the URI itself. Adding a new kind of action means writing a new CIP and persuading each wallet separately. That is the gap, and it is the whole argument.
+Nine are registered — CPS-16 lists eight and omits `//connect`. Four of them produce a transaction, and each fixes its shape in the URI with a defined set of query parameters; the rest reference chain data, open a browser, or pair a peer. None returns a transaction a publisher composed. Adding a new kind of action therefore means writing a new CIP and persuading each wallet separately. That is the gap, and it is the whole argument.
 
 **The registry is not authoritative.** CPS-16's list omits `//connect`, which CIP-45 has used since 2023. Grep the repo before claiming a name is free.
 
@@ -33,7 +33,7 @@ It is already a URI → wallet → HTTP POST to a third-party server → structu
 
 **What CIP-99 does not do is return a transaction the user signs.** Its server builds and submits the transaction itself and pays for it; the user receives tokens and never signs anything. That is the honest statement of what we add, and it is stronger than an argument from absence:
 
-> Wallets will POST to a project's own server from a URI — CIP-99 is Active with five implementations. What no authority does is return a transaction for the user to authorise. Every existing one either fixes the shape in the URI or has the server sign.
+> Wallets will POST to a project's own server from a URI — CIP-99 is Active with five implementations. What no authority does is return a transaction for the user to authorise. Every one that produces a transaction either fixes its shape in the URI or has the server sign it.
 
 **It is also the template for getting to Active.** CIP-99 shipped with an open-source reference server, a wallet vendor among its authors, and a concrete use case. CIP-157 has none of those and has sat open since June 2024. We have the reference server (`server` plus the AdaLink integration) and the use case. The missing ingredient is a wallet co-author.
 
@@ -52,7 +52,7 @@ Merged 2026-08-04 as Proposed. A CIP-30 transport over OS deep links: `connect`,
 | Commit binding: `BLAKE2b-256(canonical-cbor(tx_body))`, echoed in the response and re-checked by the client | Binds a returned witness set to the exact body we derived effects from. Matters most on rebuild-and-retry, where a body changes mid-flow |
 | Witness merge is append, never replace, on `vkey_witnesses`; reject responses carrying non-vkey material we did not expect | Replace semantics silently drops co-signers; unexpected script material is injection |
 | Strict base64url decode — reject padding and non-canonical tails | Permissive decoders admit malleability |
-| Wallets return no UTxOs; addresses capped | Our Mode A privacy stance, already normative somewhere we can cite |
+| Wallets return no UTxOs; addresses capped | Our Mode A privacy stance, already normative in a merged CIP rather than asserted only by us |
 
 Its test vectors under `CIP-0186/tests/vectors/` cover Conway tx body extraction, commit computation and witness splicing — behaviours `verifier` and `flow` must get right whatever the transport. Reuse them as fixtures rather than deriving our own oracle.
 

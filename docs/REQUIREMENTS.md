@@ -6,7 +6,7 @@ Distilled from the design document. This file is the product source of truth for
 
 Every on-chain action on Cardano begins with leaving the current context: navigate to a dApp, connect a wallet, find the screen, fill a form, sign. Intent forms when a link is seen and dies before the dApp loads. There is no standard way to say "here is a specific thing to do on-chain, ready to sign" in a form that travels — X, WhatsApp, Telegram, SMS, a printed QR code.
 
-Not for want of trying. CIP-13's `web+cardano:` scheme has eight registered authorities, and CIP-99 — Active, with five wallet implementations — already has wallets POST to a project's own server from a link. What none of them do is return a transaction for the user to authorise: every authority either fixes the transaction shape in the URI or has the server build and sign it, so a new kind of action means a new CIP and a per-wallet integration. See `docs/ECOSYSTEM.md`.
+Not for want of trying. CIP-13's `web+cardano:` scheme has nine registered authorities, and CIP-99 — Active, with five wallet implementations — already has wallets POST to a project's own server from a link. What none of them do is return a transaction for the user to authorise: the four that produce a transaction fix its shape in the URI, and CIP-99's server builds and signs its own. So a new kind of action means a new CIP and a per-wallet integration. See `docs/ECOSYSTEM.md`.
 
 ## 2. What we build
 

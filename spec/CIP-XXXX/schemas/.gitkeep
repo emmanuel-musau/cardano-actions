@@ -1,0 +1,4 @@
+JSON Schema for every payload the CIP defines, consumed by @cardano-actions/core
+at runtime so the spec and the validator cannot drift.
+
+Filled by #15 (GET), #16 (actions.json) and #17 (POST).
