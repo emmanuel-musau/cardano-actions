@@ -58,13 +58,13 @@
     "disabled": {
       "$ref": "#/$defs/disabled"
     },
-    "error": {
-      "$ref": "#/$defs/error"
+    "reason": {
+      "$ref": "#/$defs/reason"
     }
   },
   "allOf": [
     {
-      "$ref": "#/$defs/disabledAndErrorTravelTogether"
+      "$ref": "#/$defs/disabledAndReasonTravelTogether"
     }
   ],
   "$defs": {
@@ -110,13 +110,13 @@
         "disabled": {
           "$ref": "#/$defs/disabled"
         },
-        "error": {
-          "$ref": "#/$defs/error"
+        "reason": {
+          "$ref": "#/$defs/reason"
         }
       },
       "allOf": [
         {
-          "$ref": "#/$defs/disabledAndErrorTravelTogether"
+          "$ref": "#/$defs/disabledAndReasonTravelTogether"
         }
       ]
     },
@@ -232,7 +232,7 @@
       "description": "Set on the response to close everything, or on one linked action to close that option.",
       "type": "boolean"
     },
-    "error": {
+    "reason": {
       "description": "Why something is unavailable. Never a stack trace, never a late failure.",
       "type": "object",
       "additionalProperties": false,
@@ -244,13 +244,13 @@
           "maxLength": 300
         },
         "code": {
-          "description": "Reserved. The registry of codes is specified separately.",
+          "description": "Reserved: names why this is unavailable, e.g. SOLD_OUT. Not a failure code — the endpoint succeeded.",
           "type": "string",
           "pattern": "^[A-Z][A-Z0-9_]{2,47}$"
         }
       }
     },
-    "disabledAndErrorTravelTogether": {
+    "disabledAndReasonTravelTogether": {
       "allOf": [
         {
           "if": {
@@ -264,13 +264,13 @@
           },
           "then": {
             "type": "object",
-            "required": ["error"]
+            "required": ["reason"]
           }
         },
         {
           "if": {
             "type": "object",
-            "required": ["error"]
+            "required": ["reason"]
           },
           "then": {
             "type": "object",

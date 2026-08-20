@@ -19,7 +19,7 @@ Three deliberately separate things:
 ## 3. Protocol contract (v1)
 
 ### GET — discovery
-Returns: `type`, `version`, `title`, `description`, `icon`, `label`, `network`, `links.actions[]` (each with `label`, `href`, optional `parameters[]` with `name/label/type/min/max/required`). Template placeholders like `{amount}` in `href`. Unavailable actions still respond with `disabled: true` and an `error.message` — they render greyed out, never fail after the user commits.
+Returns: `type`, `version`, `title`, `description`, `icon`, `label`, `network`, `links.actions[]` (each with `label`, `href`, optional `parameters[]` with `name/label/type/min/max/required`). Template placeholders like `{amount}` in `href`. Unavailable actions still respond with `disabled: true` and an `reason.message` — they render greyed out, never fail after the user commits.
 
 ### actions.json — domain mapping
 Served from the domain root, CORS-enabled: `rules[]` of `pathPattern` → `apiPath` with `*`/`**` wildcards. Lets `linktap.example/delegate/POOL1` resolve to the real endpoint while the shared link stays human.

@@ -2,11 +2,13 @@
   "type": "action",
   "version": "1",
   "network": "mainnet",
-  "icon": "https://tips.linktap.example/i/creator.png",
-  "title": "Tip @creator",
-  "description": "Send a tip straight to their wallet.",
-  "label": "Tip",
+  "icon": "https://fund.linktap.example/i/community-fund.png",
+  "title": "Contribute to the Community Fund",
+  "description": "Pick an amount and a token. The fund's address is the only recipient.",
+  "label": "Contribute",
   "links": {
-    "actions": [{ "label": "Tip {amount} USDM", "href": "/api/actions/tip/creator?amount={amount}&token=usdm" }]
+    "actions": [
+      { "label": "Contribute {amount} USDM", "href": "/api/actions/fund/community?amount={amount}&token=usdm" }
+    ]
   }
 }

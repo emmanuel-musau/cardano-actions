@@ -42,7 +42,7 @@ const fixture = (dir: string, file: string): unknown => readJson(join(examples, 
  * than one that admits it doesn't.
  *
  * `strictRequired` is the one exception, and it is off because it cannot see
- * through `$ref`: the conditional that ties `disabled` to `error` is a shared
+ * through `$ref`: the conditional that ties `disabled` to `reason` is a shared
  * definition applied at two levels, so the properties it requires are declared
  * in the schemas that use it, not in the definition itself. Satisfying the rule
  * would mean duplicating those declarations inside every branch. A misspelled
@@ -75,8 +75,8 @@ const schemaRejections: ReadonlyArray<Rejection> = [
   { file: "unknown-network.json", keyword: "enum", instancePath: "/network" },
   { file: "insecure-icon.json", keyword: "pattern", instancePath: "/icon" },
   { file: "undeclared-field.json", keyword: "additionalProperties", instancePath: "", param: "amount" },
-  { file: "disabled-without-error.json", keyword: "required", instancePath: "", param: "error" },
-  { file: "error-without-disabled.json", keyword: "required", instancePath: "", param: "disabled" },
+  { file: "disabled-without-reason.json", keyword: "required", instancePath: "", param: "reason" },
+  { file: "reason-without-disabled.json", keyword: "required", instancePath: "", param: "disabled" },
   { file: "too-many-actions.json", keyword: "maxItems", instancePath: "/links/actions" },
   { file: "empty-actions.json", keyword: "minItems", instancePath: "/links/actions" },
   { file: "link-without-href.json", keyword: "required", instancePath: "/links/actions/0", param: "href" },
@@ -148,6 +148,33 @@ describe("the rules the schema cannot express", () => {
 
   it.each(ruleRejections)("$file has its rule stated normatively in the CIP", ({ rule }) => {
     expect(rule.test(source)).toBe(true)
+  })
+})
+
+describe("the example corpus", () => {
+  it("labels every button with the value its own href sends", () => {
+    // Nothing in the schema relates a label to an href, so an example can say
+    // one amount and request another and still validate. In a specification
+    // that is worse than a broken example: it teaches the wrong thing, and
+    // every reader who copies it inherits the mistake.
+    const disagreements: Array<string> = []
+
+    for (const dir of ["valid", "invalid/schema", "invalid/rule"]) {
+      for (const file of fixtures(dir)) {
+        const doc = fixture(dir, file) as {
+          links?: { actions?: Array<{ label?: string; href?: string }> }
+        }
+        for (const action of doc.links?.actions ?? []) {
+          const labelled = /\b(\d+)\b/.exec(action.label ?? "")?.[1]
+          const sent = /amount=(\d+)/.exec(action.href ?? "")?.[1]
+          if (labelled !== undefined && sent !== undefined && labelled !== sent) {
+            disagreements.push(`${dir}/${file}: "${action.label}" sends amount=${sent}`)
+          }
+        }
+      }
+    }
+
+    expect(disagreements).toEqual([])
   })
 })
 
@@ -248,7 +275,7 @@ describe("the CIP text and the schema", () => {
     const unavailable = section("Unavailable actions")
     // Both of these have bitten every protocol that shipped without them: a
     // dead control with no reason, and a client that hides what it can't use.
-    expect(unavailable).toMatch(/MUST be accompanied by `error`/)
+    expect(unavailable).toMatch(/MUST be accompanied by `reason`/)
     expect(unavailable).toMatch(/MUST NOT hide a disabled action/)
     // Precedence, spelled out — a linked action cannot re-open a closed one.
     expect(unavailable).toMatch(/top level wins/)

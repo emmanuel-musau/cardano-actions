@@ -7,5 +7,5 @@
   "description": "Stake your ADA. Funds never leave your wallet.",
   "label": "Delegate",
   "disabled": true,
-  "error": { "message": "This campaign closed on 12 August. Nothing can be signed from this link." }
+  "reason": { "message": "This campaign closed on 12 August. Nothing can be signed from this link." }
 }

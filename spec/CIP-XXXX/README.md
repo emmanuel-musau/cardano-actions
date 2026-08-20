@@ -37,7 +37,7 @@ required.
 
 This proposal also registers the `//action` authority under [CIP-13], defines an
 `actions.json` mapping from human-readable paths to endpoints, and specifies the
-error and disabled states a client must render.
+unavailable and failure states a client must render.
 
 ## Motivation: Why is this CIP necessary?
 
@@ -156,7 +156,7 @@ The response body is a single JSON object.
 | `network` | yes | string | One of `mainnet`, `preprod`, `preview`. A client MUST NOT `POST` while the connected wallet is on a different network. |
 | `links` | no | object | Carries `actions`, an array of 1–3 [linked actions](#linked-actions). When absent, the action is a single button labelled `label` whose target is the discovery URL itself. |
 | `disabled` | no | boolean | When `true`, nothing in this response may be signed. See [Unavailable actions](#unavailable-actions). |
-| `error` | no | object | Why the action is unavailable. Valid only alongside `disabled`. |
+| `reason` | no | object | Why the action is unavailable. Valid only alongside `disabled`. |
 
 A client MUST reject a response carrying a member not defined above. An
 undefined member is either a newer version the client has not been told about
@@ -199,7 +199,7 @@ action against the same publisher.
 | `href` | yes | string | The `POST` target: a path-absolute reference, or an absolute `https:` URL. MAY contain placeholders. |
 | `parameters` | no | array | 1–8 [parameters](#parameters) whose values complete `href`. |
 | `disabled` | no | boolean | When `true`, this option alone cannot be used. |
-| `error` | no | object | Why this option is unavailable. Valid only alongside `disabled`. |
+| `reason` | no | object | Why this option is unavailable. Valid only alongside `disabled`. |
 
 A client MUST resolve `href` against the discovery URL, and MUST reject the
 response unless every resolved target has the same origin as the discovery URL.
@@ -217,17 +217,17 @@ legible at any width and keeps a card from becoming a menu.
   "type": "action",
   "version": "1",
   "network": "mainnet",
-  "icon": "https://tips.linktap.example/i/creator.png",
-  "title": "Tip @creator",
-  "description": "Send a tip straight to their wallet.",
-  "label": "Tip",
+  "icon": "https://fund.linktap.example/i/community-fund.png",
+  "title": "Contribute to the Community Fund",
+  "description": "Pick an amount and a token. The fund's address is the only recipient.",
+  "label": "Contribute",
   "links": {
     "actions": [
-      { "label": "Tip 5 USDM", "href": "/api/actions/tip/creator?amount=5&token=usdm" },
-      { "label": "Tip 20 USDM", "href": "/api/actions/tip/creator?amount=20&token=usdm" },
+      { "label": "Contribute 25 USDM", "href": "/api/actions/fund/community?amount=25&token=usdm" },
+      { "label": "Contribute 100 USDM", "href": "/api/actions/fund/community?amount=100&token=usdm" },
       {
-        "label": "Tip {amount} {token}",
-        "href": "/api/actions/tip/creator?amount={amount}&token={token}",
+        "label": "Contribute {amount} {token}",
+        "href": "/api/actions/fund/community?amount={amount}&token={token}",
         "parameters": [
           { "name": "amount", "label": "Amount", "type": "number", "min": 1, "max": 500, "required": true },
           {
@@ -290,26 +290,29 @@ A linked action without `parameters` is submitted as soon as it is chosen.
 
 ### Unavailable actions
 
-`disabled` appears at two levels, and its accompanying `error` explains it.
+`disabled` appears at two levels, and its accompanying `reason` explains it.
 
 - `disabled` at the top level closes the entire action.
 - `disabled` on a linked action closes that option alone.
 - Where both appear, the top level wins. A linked action MUST NOT be treated as
   usable because it carries `disabled: false` under a disabled response.
-- `disabled: true` MUST be accompanied by `error` at the same level. A control
+- `disabled: true` MUST be accompanied by `reason` at the same level. A control
   a person cannot use, with no reason given, leaves them unable to distinguish a
   closed action from a broken one.
-- `error` MUST NOT appear without `disabled: true`. It states why something is
+- `reason` MUST NOT appear without `disabled: true`. It states why something is
   unavailable and carries no other meaning.
 
-A client MUST render a disabled action, and MUST render its `error.message` in
+A client MUST render a disabled action, and MUST render its `reason.message` in
 place of the control it disables. A client MUST NOT hide a disabled action or
 omit a disabled option: a shared link is seen by many people at once, and a
 client that silently drops part of it shows different people different actions
 with no way for the publisher to know.
 
-`error` carries a REQUIRED human-readable `message` of 1–300 characters, and an
-OPTIONAL machine-readable `code`.
+`reason` carries a REQUIRED human-readable `message` of 1–300 characters, and an
+OPTIONAL machine-readable `code` naming the unavailability. A `code` here is not
+a failure code: the request succeeded, and the response is describing the state
+of the action rather than reporting that something went wrong. Codes for
+requests that genuinely fail are specified with the error taxonomy.
 
 ```json
 {
@@ -321,7 +324,7 @@ OPTIONAL machine-readable `code`.
   "description": "Stake your ADA. Funds never leave your wallet.",
   "label": "Delegate",
   "disabled": true,
-  "error": { "message": "This campaign closed on 12 August. Nothing can be signed from this link." }
+  "reason": { "message": "This campaign closed on 12 August. Nothing can be signed from this link." }
 }
 ```
 
@@ -330,18 +333,18 @@ OPTIONAL machine-readable `code`.
   "type": "action",
   "version": "1",
   "network": "preprod",
-  "icon": "https://tips.linktap.example/i/creator.png",
-  "title": "Tip @creator",
-  "description": "Send a tip straight to their wallet. The top tier is capped each day.",
-  "label": "Tip",
+  "icon": "https://linktap.example/i/builders-workshop.png",
+  "title": "Reserve a seat at the builders workshop",
+  "description": "One payment reserves one seat. Seats are released in tiers.",
+  "label": "Reserve a seat",
   "links": {
     "actions": [
-      { "label": "Tip 5 USDM", "href": "/api/actions/tip/creator?amount=5&token=usdm" },
+      { "label": "General seat — 25 USDM", "href": "/api/actions/workshop/reserve?tier=general" },
       {
-        "label": "Tip 50 USDM",
-        "href": "/api/actions/tip/creator?amount=50&token=usdm",
+        "label": "Front row — 75 USDM",
+        "href": "/api/actions/workshop/reserve?tier=front",
         "disabled": true,
-        "error": { "message": "Sold out for today. Try again tomorrow." }
+        "reason": { "message": "Front row is sold out. General seats are still available." }
       }
     ]
   }

@@ -2,13 +2,15 @@
   "type": "action",
   "version": "1",
   "network": "mainnet",
-  "icon": "https://tips.linktap.example/i/creator.png",
-  "title": "Tip @creator",
-  "description": "Send a tip straight to their wallet.",
-  "label": "Tip",
+  "icon": "https://linktap.example/i/voting-power.svg",
+  "title": "Delegate your voting power",
+  "description": "Choose a delegate representative. Your ADA never moves and stays fully spendable.",
+  "label": "Delegate voting power",
   "disabled": true,
-  "error": { "message": "Tipping is paused while the wallet is being migrated." },
+  "reason": { "message": "Delegation is paused until the next epoch boundary." },
   "links": {
-    "actions": [{ "label": "Tip 5 USDM", "href": "/api/actions/tip/creator?amount=5&token=usdm", "disabled": false }]
+    "actions": [
+      { "label": "Delegate to drep1wqz…", "href": "/api/actions/drep/delegate?drep=drep1wqz", "disabled": false }
+    ]
   }
 }

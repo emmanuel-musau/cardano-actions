@@ -2,16 +2,16 @@
   "type": "action",
   "version": "1",
   "network": "mainnet",
-  "icon": "https://tips.linktap.example/i/creator.png",
-  "title": "Tip @creator",
-  "description": "Send a tip straight to their wallet.",
-  "label": "Tip",
+  "icon": "https://fund.linktap.example/i/community-fund.png",
+  "title": "Contribute to the Community Fund",
+  "description": "Pick an amount and a token. The fund's address is the only recipient.",
+  "label": "Contribute",
   "links": {
     "actions": [
-      { "label": "Tip 5 USDM", "href": "/api/actions/tip/creator?amount=5&token=usdm" },
-      { "label": "Tip 20 USDM", "href": "/api/actions/tip/creator?amount=20&token=usdm" },
-      { "label": "Tip 50 USDM", "href": "/api/actions/tip/creator?amount=50&token=usdm" },
-      { "label": "Tip 100 USDM", "href": "/api/actions/tip/creator?amount=100&token=usdm" }
+      { "label": "Contribute 25 USDM", "href": "/api/actions/fund/community?amount=25&token=usdm" },
+      { "label": "Contribute 100 USDM", "href": "/api/actions/fund/community?amount=100&token=usdm" },
+      { "label": "Contribute 250 USDM", "href": "/api/actions/fund/community?amount=250&token=usdm" },
+      { "label": "Contribute 500 USDM", "href": "/api/actions/fund/community?amount=500&token=usdm" }
     ]
   }
 }
