@@ -90,7 +90,7 @@ Then compares derived effects against declared metadata and returns `match | mis
 | `derive.ts` | Diffs inputs against outputs for the user's addresses → ADA delta, per-policy asset deltas, exact fee, certificates, withdrawals, mint/burn, validity interval |
 | `deposits.ts` | Separates refundable deposits (stake registration's 2 ADA) from spent value. Showing a deposit as a cost is wrong; hiding it is worse. |
 | `compare.ts` | Derived vs declared → verdict. This function is what blocks a signature. |
-| `test/fixtures/` | ~50 known-good transactions with expected outputs. Regression safety. |
+| `test/fixtures/` | ~50 known-good transactions with expected outputs. Regression safety. Seeded from CIP-0186's published vectors for Conway tx-body extraction and commit computation, so those behaviours are checked against an oracle three wallets already agree on. |
 | `test/adversarial/` | **The proof artefact.** Transactions whose declared metadata contradicts what they do — hidden outputs, wrong pool, inflated fee, unexpected mint. Public, and the strongest single piece of evidence that the security claim holds. |
 
 Deliberately consumable standalone: a wallet or an explorer should be able to use `verifier` without adopting the rest of the protocol. That reusability is an argument in the CIP.
@@ -236,6 +236,8 @@ Test sources are typechecked but never emitted, so root `tsconfig.test.json` tur
 **Build (Mode A, the only v1 mode).** Client resolves the link through `actions.json` → `GET` metadata → renders card → wallet connect → `POST { changeAddress, network }` → server returns a *partial* intent (its side only) → **client balances locally** → complete unsigned tx. The endpoint never sees the user's UTxO set; that is the privacy advantage we extracted from the eUTxO input-selection constraint.
 
 **Sign.** Derive effects → compare → block on mismatch, otherwise show exact effects → `signTx` (returns a **witness set**, not a signed tx) → assemble witnesses into the body → `submitTx` → receipt. On input-spent failure, rebuild from fresh UTxOs, re-derive effects, and only then re-prompt.
+
+`flow` holds a **commit** — `BLAKE2b-256(canonical-cbor(tx_body))`, which is the transaction id — for the body effects were derived from, and assembles witnesses only into that body. A rebuild yields a new commit and re-derivation. Witnesses append to `vkey_witnesses`, never replace, and a witness set carrying non-vkey material we did not expect is rejected rather than merged. Both rules come from CIP-186, which three wallet teams have implemented; adopting them costs nothing and keeps our vocabulary aligned with the transport a native mobile client would use. Invisible to endpoint authors.
 
 ## Trust model
 

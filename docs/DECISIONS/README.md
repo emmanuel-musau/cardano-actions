@@ -14,5 +14,6 @@ Write an ADR when a choice is hard to reverse, affects more than one package, or
 | [0004](0004-cip30-wallet-layer.md) | Build the CIP-30 layer on evolution-sdk, not cardano-connect-with-wallet | Proposed |
 | [0005](0005-package-names.md) | Name packages for the job they do, not the tier they sit in | Accepted |
 | [0006](0006-two-tier-publisher-identity.md) | Ship publisher identity in two tiers, with the domain manifest as the default | Accepted |
+| [0007](0007-action-authority.md) | Claim `//action` as the URI authority, register it through CPS-16, and keep it out of M1 | Accepted |
 
 Three more are already ticketed as spikes and land here when decided: error-code taxonomy and spec versioning (#18), CBOR decode approach (#33), CIP-0170 go/no-go (#63) — which ADR-0006 narrows to the Tier-2 question only.

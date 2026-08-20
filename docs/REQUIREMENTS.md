@@ -6,6 +6,8 @@ Distilled from the design document. This file is the product source of truth for
 
 Every on-chain action on Cardano begins with leaving the current context: navigate to a dApp, connect a wallet, find the screen, fill a form, sign. Intent forms when a link is seen and dies before the dApp loads. There is no standard way to say "here is a specific thing to do on-chain, ready to sign" in a form that travels — X, WhatsApp, Telegram, SMS, a printed QR code.
 
+Not for want of trying. CIP-13's `web+cardano:` scheme has eight registered authorities, and CIP-99 — Active, with five wallet implementations — already has wallets POST to a project's own server from a link. What none of them do is return a transaction for the user to authorise: every authority either fixes the transaction shape in the URI or has the server build and sign it, so a new kind of action means a new CIP and a per-wallet integration. See `docs/ECOSYSTEM.md`.
+
 ## 2. What we build
 
 Three deliberately separate things:
@@ -29,6 +31,8 @@ Mode B (server-side balancing, client ships UTxOs) is specified as reserved/decl
 
 ### Sign and submit
 Client ends with a complete unsigned tx: derive effects → show → CIP-30 `signTx` (returns a **witness set**) → assemble witnesses into the body → `submitTx`. Short validity intervals plus automatic rebuild-and-retry when UTxOs move between build and sign.
+
+The client records `BLAKE2b-256(canonical-cbor(tx_body))` — the transaction id — for the body it derived effects from, and assembles a returned witness set only into that body. A rebuild produces a new commit and re-derives effects before re-prompting. Witnesses are appended to any already present, never replacing them. This is internal to the client; endpoint authors never see it. It follows CIP-186's commit binding so the two agree on what identifies a transaction.
 
 ## 4. The effects engine — the security model
 
@@ -59,7 +63,9 @@ Tier 1 is in M1 unconditionally. Tier 2 carries an explicit go/no-go at end of M
 
 **In:** spec + CIP draft; `core`; `server` with one adapter (Next.js); the `verifier` effects engine; the `flow` client SDK; hosted + self-hostable interstitial; Tier-1 domain publisher attestation (Tier-2 CIP-0170 subject to the Month 1 go/no-go); AdaLink USDM/USDCx payment action live on mainnet; public adversarial corpus.
 
-**Deferred (roadmap — do not build in M1):** mobile CIP-13 `//action` deep links; browser extension inline rendering; server-side balancing (Mode B); additional framework adapters; additional action types.
+**Deferred (roadmap — do not build in M1):** mobile CIP-13 `//action` deep links; a CIP-186 transport for native mobile clients; browser extension inline rendering; server-side balancing (Mode B); additional framework adapters; additional action types.
+
+On mobile, a shared link opened in a phone browser reaches a wallet through CIP-158 `//browse`, which lands the interstitial in the wallet's in-app browser where CIP-30 is injected and the desktop flow runs unchanged. CIP-186 is a separate case — the transport a *native mobile app* would use to be a client — and cannot carry the interstitial, because its source-app attestation requires an installed app. See `docs/ECOSYSTEM.md` §3.
 
 ## 7. Reference integration — AdaLink
 
