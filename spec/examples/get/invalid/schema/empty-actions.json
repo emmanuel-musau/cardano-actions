@@ -1,0 +1,10 @@
+{
+  "type": "action",
+  "version": "1",
+  "network": "mainnet",
+  "icon": "https://tips.linktap.example/i/creator.png",
+  "title": "Tip @creator",
+  "description": "Send a tip straight to their wallet.",
+  "label": "Tip",
+  "links": { "actions": [] }
+}

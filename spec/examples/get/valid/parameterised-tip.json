@@ -1,0 +1,32 @@
+{
+  "type": "action",
+  "version": "1",
+  "network": "mainnet",
+  "icon": "https://tips.linktap.example/i/creator.png",
+  "title": "Tip @creator",
+  "description": "Send a tip straight to their wallet.",
+  "label": "Tip",
+  "links": {
+    "actions": [
+      { "label": "Tip 5 USDM", "href": "/api/actions/tip/creator?amount=5&token=usdm" },
+      { "label": "Tip 20 USDM", "href": "/api/actions/tip/creator?amount=20&token=usdm" },
+      {
+        "label": "Tip {amount} {token}",
+        "href": "/api/actions/tip/creator?amount={amount}&token={token}",
+        "parameters": [
+          { "name": "amount", "label": "Amount", "type": "number", "min": 1, "max": 500, "required": true },
+          {
+            "name": "token",
+            "label": "Token",
+            "type": "select",
+            "required": true,
+            "options": [
+              { "label": "USDM", "value": "usdm" },
+              { "label": "USDCx", "value": "usdcx" }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

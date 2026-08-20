@@ -1,0 +1,10 @@
+{
+  "type": "action",
+  "version": "1",
+  "network": "mainnet",
+  "icon": "https://linktap.example/i/community-pool.svg",
+  "title": "Delegate to Community Stake Pool",
+  "description": "Stake your ADA. Funds never leave your wallet.",
+  "label": "Delegate",
+  "error": { "message": "Heads up: the pool is nearly saturated." }
+}

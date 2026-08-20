@@ -1,0 +1,20 @@
+{
+  "type": "action",
+  "version": "1",
+  "network": "preprod",
+  "icon": "https://tips.linktap.example/i/creator.png",
+  "title": "Tip @creator",
+  "description": "Send a tip straight to their wallet. The top tier is capped each day.",
+  "label": "Tip",
+  "links": {
+    "actions": [
+      { "label": "Tip 5 USDM", "href": "/api/actions/tip/creator?amount=5&token=usdm" },
+      {
+        "label": "Tip 50 USDM",
+        "href": "/api/actions/tip/creator?amount=50&token=usdm",
+        "disabled": true,
+        "error": { "message": "Sold out for today. Try again tomorrow." }
+      }
+    ]
+  }
+}

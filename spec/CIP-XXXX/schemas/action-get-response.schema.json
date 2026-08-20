@@ -1,0 +1,288 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Action discovery response",
+  "description": "The body a Cardano Action endpoint returns from GET. Normative for version 1.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["type", "version", "title", "description", "icon", "label", "network"],
+  "properties": {
+    "type": {
+      "description": "Discriminates a discovery response from the partial intent POST returns.",
+      "const": "action"
+    },
+    "version": {
+      "description": "Major version of the Action protocol this response speaks.",
+      "type": "string",
+      "pattern": "^[1-9][0-9]*$"
+    },
+    "title": {
+      "description": "What the action does, as a person would say it.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120
+    },
+    "description": {
+      "description": "Plain text. No markup, no links.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500
+    },
+    "icon": {
+      "$ref": "#/$defs/iconUrl"
+    },
+    "label": {
+      "description": "Label of the single button rendered when links.actions is absent.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 48
+    },
+    "network": {
+      "$ref": "#/$defs/network"
+    },
+    "links": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["actions"],
+      "properties": {
+        "actions": {
+          "description": "At most three. A publisher needing more choices uses a select parameter.",
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 3,
+          "items": {
+            "$ref": "#/$defs/linkedAction"
+          }
+        }
+      }
+    },
+    "disabled": {
+      "$ref": "#/$defs/disabled"
+    },
+    "error": {
+      "$ref": "#/$defs/error"
+    }
+  },
+  "allOf": [
+    {
+      "$ref": "#/$defs/disabledAndErrorTravelTogether"
+    }
+  ],
+  "$defs": {
+    "network": {
+      "description": "Named rather than numeric: CIP-30's network id cannot separate preprod from preview.",
+      "enum": ["mainnet", "preprod", "preview"]
+    },
+    "iconUrl": {
+      "description": "Absolute https URL of a square image. No data: URIs \u2014 a link unfurler has to fetch it too.",
+      "type": "string",
+      "pattern": "^https://[^\\s]+$",
+      "maxLength": 2048
+    },
+    "href": {
+      "description": "Path-absolute reference, or an absolute https URL on the endpoint's own origin.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2048,
+      "pattern": "^(/[^\\s]*|https://[^\\s]+)$"
+    },
+    "linkedAction": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["label", "href"],
+      "properties": {
+        "label": {
+          "description": "Button text. May carry {placeholders} drawn from this action's parameters.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "href": {
+          "$ref": "#/$defs/href"
+        },
+        "parameters": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 8,
+          "items": {
+            "$ref": "#/$defs/parameter"
+          }
+        },
+        "disabled": {
+          "$ref": "#/$defs/disabled"
+        },
+        "error": {
+          "$ref": "#/$defs/error"
+        }
+      },
+      "allOf": [
+        {
+          "$ref": "#/$defs/disabledAndErrorTravelTogether"
+        }
+      ]
+    },
+    "parameter": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "label", "type"],
+      "properties": {
+        "name": {
+          "description": "Matches the {placeholder} it fills.",
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_]{0,31}$"
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 48
+        },
+        "type": {
+          "enum": ["text", "number", "select"]
+        },
+        "required": {
+          "type": "boolean"
+        },
+        "min": {
+          "type": "number"
+        },
+        "max": {
+          "type": "number"
+        },
+        "options": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 20,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["label", "value"],
+            "properties": {
+              "label": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 48
+              },
+              "value": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              }
+            }
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "select"
+              }
+            },
+            "required": ["type"]
+          },
+          "then": {
+            "type": "object",
+            "required": ["options"],
+            "not": {
+              "anyOf": [
+                {
+                  "required": ["min"]
+                },
+                {
+                  "required": ["max"]
+                }
+              ]
+            }
+          },
+          "else": {
+            "type": "object",
+            "not": {
+              "required": ["options"]
+            }
+          }
+        },
+        {
+          "if": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              }
+            },
+            "required": ["type"]
+          },
+          "then": {
+            "type": "object",
+            "properties": {
+              "min": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "max": {
+                "type": "integer",
+                "minimum": 0
+              }
+            }
+          }
+        }
+      ]
+    },
+    "disabled": {
+      "description": "Set on the response to close everything, or on one linked action to close that option.",
+      "type": "boolean"
+    },
+    "error": {
+      "description": "Why something is unavailable. Never a stack trace, never a late failure.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["message"],
+      "properties": {
+        "message": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "code": {
+          "description": "Reserved. The registry of codes is specified separately.",
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9_]{2,47}$"
+        }
+      }
+    },
+    "disabledAndErrorTravelTogether": {
+      "allOf": [
+        {
+          "if": {
+            "type": "object",
+            "properties": {
+              "disabled": {
+                "const": true
+              }
+            },
+            "required": ["disabled"]
+          },
+          "then": {
+            "type": "object",
+            "required": ["error"]
+          }
+        },
+        {
+          "if": {
+            "type": "object",
+            "required": ["error"]
+          },
+          "then": {
+            "type": "object",
+            "properties": {
+              "disabled": {
+                "const": true
+              }
+            },
+            "required": ["disabled"]
+          }
+        }
+      ]
+    }
+  }
+}

@@ -53,7 +53,7 @@ Shared vocabulary. Effect Schema definitions for the GET metadata response and t
 |---|---|
 | `types.ts` | `Action`, `Parameter`, `PartialIntent`, `DerivedEffects` — what a third-party implementer reads first |
 | `url.ts` | Parse, resolve, validate action URLs; the human URL → technical endpoint indirection |
-| `actions-json.ts` | Domain mapping rules, so `adalink.io/pay/kibera` resolves to `/api/actions/pay` |
+| `actions-json.ts` | Domain mapping rules, so `linktap.example/pay/corner-store` resolves to `/api/actions/pay` |
 | `errors.ts` | Typed error taxonomy — every failure mode the UI must render has a code here |
 
 Zero runtime dependencies is the goal.

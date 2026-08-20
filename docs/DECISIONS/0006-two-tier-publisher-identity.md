@@ -19,7 +19,7 @@ Cardano Foundation authors it, with Reeve and Veridian as implementors.
 
 **Three things it does not give us:**
 
-1. **No domain→AID discovery.** Nothing answers "given `adalink.io`, which
+1. **No domain→AID discovery.** Nothing answers "given `linktap.example`, which
    identifier should I trust?" That is the exact question a client has to answer
    before it can render a publisher, and it is ours to define.
 2. **No publisher payload.** The digest is over arbitrary data, so the shape of

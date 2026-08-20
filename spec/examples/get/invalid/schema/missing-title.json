@@ -1,0 +1,8 @@
+{
+  "type": "action",
+  "version": "1",
+  "network": "mainnet",
+  "icon": "https://linktap.example/i/corner-store.png",
+  "description": "One payment to the shop's address.",
+  "label": "Pay 12.00 USDM"
+}

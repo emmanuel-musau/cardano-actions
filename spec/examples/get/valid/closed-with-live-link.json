@@ -1,0 +1,14 @@
+{
+  "type": "action",
+  "version": "1",
+  "network": "mainnet",
+  "icon": "https://tips.linktap.example/i/creator.png",
+  "title": "Tip @creator",
+  "description": "Send a tip straight to their wallet.",
+  "label": "Tip",
+  "disabled": true,
+  "error": { "message": "Tipping is paused while the wallet is being migrated." },
+  "links": {
+    "actions": [{ "label": "Tip 5 USDM", "href": "/api/actions/tip/creator?amount=5&token=usdm", "disabled": false }]
+  }
+}

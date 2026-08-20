@@ -1,0 +1,18 @@
+{
+  "type": "action",
+  "version": "1",
+  "network": "mainnet",
+  "icon": "https://tips.linktap.example/i/creator.png",
+  "title": "Tip @creator",
+  "description": "Send a tip straight to their wallet.",
+  "label": "Tip",
+  "links": {
+    "actions": [
+      {
+        "label": "Tip 5 USDM",
+        "href": "/api/actions/tip/creator?amount=5&token=usdm",
+        "parameters": [{ "name": "amount", "label": "Amount", "type": "number", "min": 1, "max": 500 }]
+      }
+    ]
+  }
+}
