@@ -24,7 +24,7 @@ Never mention Claude, Anthropic, or any AI tool anywhere in this repository's ou
 
 There is exactly one design sheet for the whole client UI, and it is the reference for any work that renders something a user sees:
 
-**Cardano Slips** — https://claude.ai/design/p/79057abf-f6fc-410c-9d7c-f8490d1088ea?file=Cardano+Actions.dc.html
+**Cardano Slips** — https://claude.ai/design/p/79057abf-f6fc-410c-9d7c-f8490d1088ea?file=Cardano+Slips.dc.html
 
 The sheet has two columns. The left column is the component system: `1 · Tokens` (colour, type, spacing, radius, the dark-surface rule, and a WCAG AA contrast audit), `2 · Action card` (states a–g), `3 · Transaction preview · anatomy`, `4 · Entering the dark`, `5 · Transaction preview · states` (a–h, including the mismatch block). The right column is the hosted interstitial — the M1 client itself: `6 · Hosted page · anatomy`, `7 · Page states` (a–h), `8 · Wallet connect`, `9 · In-wallet browser`, `10 · Chrome rules`, and `11 · Still to design`.
 
