@@ -1,5 +1,5 @@
 {
-  "type": "action",
+  "type": "slip",
   "version": "1",
   "network": "mainnet",
   "icon": "https://linktap.example/i/voting-power.svg",
@@ -10,7 +10,7 @@
   "reason": { "message": "Delegation is paused until the next epoch boundary." },
   "links": {
     "actions": [
-      { "label": "Delegate to drep1wqz…", "href": "/api/actions/drep/delegate?drep=drep1wqz", "disabled": false }
+      { "label": "Delegate to drep1wqz…", "href": "/api/slips/drep/delegate?drep=drep1wqz", "disabled": false }
     ]
   }
 }

@@ -5,7 +5,7 @@
 **Do not open a public issue.**
 
 Report privately through GitHub:
-[**Report a vulnerability**](https://github.com/emmanuel-musau/cardano-actions/security/advisories/new).
+[**Report a vulnerability**](https://github.com/emmanuel-musau/cardano-slips/security/advisories/new).
 That creates a draft advisory only the maintainers can see, and it is the only
 channel we watch for this.
 
@@ -14,7 +14,7 @@ If you cannot use GitHub advisories for some reason, say so in a public issue
 
 ## What this project is responsible for
 
-Cardano Actions turns a shared URL into a signable transaction. It holds no
+Cardano Slips turns a shared URL into a signable transaction. It holds no
 funds, custodies nothing, operates no relayer, and runs no registry that the
 protocol depends on. dApps host their own endpoints; the interstitial is
 self-hostable; the SDK is a library that runs on the user's machine.
@@ -25,7 +25,7 @@ It is this:
 > **A user signs a transaction that does something other than what they were
 > shown.**
 
-An action endpoint's metadata is a *claim*. The transaction body is the
+A Slip endpoint's metadata is a *claim*. The transaction body is the
 *truth*. The client derives the real effects from the CBOR and hard-blocks the
 signature when the two disagree. Anything that defeats, weakens, or slips past
 that derivation is the vulnerability class this project cares about most.
@@ -41,9 +41,9 @@ Roughly in order of how much we want to hear about it:
    deltas, fees, validity intervals, certificates, or multi-asset movements;
    change misattributed to the wrong party; a value movement not surfaced at
    all.
-3. **Leaking the user's UTxO set** to an action endpoint, or any path that
+3. **Leaking the user's UTxO set** to a Slip endpoint, or any path that
    makes the client disclose wallet state it should keep local.
-4. **URL and `actions.json` resolution flaws in `core`** that let one origin
+4. **URL and `slips.json` resolution flaws in `core`** that let one origin
    front an endpoint it should not be able to speak for, or that accept a
    payload the schema should reject.
 5. **Attestation handling in `identity`** — an absent, invalid, or expired
@@ -65,7 +65,7 @@ explanation of what the client shows versus what it actually does is enough.
 - **[`@evolution-sdk/evolution`](https://github.com/IntersectMBO/evolution-sdk)**
   and other upstream dependencies — report those upstream. Again, tell us if it
   changes what our client would display.
-- **Action endpoints operated by other people.** A third-party dApp serving a
+- **Slip endpoints operated by other people.** A third-party dApp serving a
   transaction that contradicts its own metadata is the threat this design
   assumes, not a flaw in it. If our client blocks it, the system worked. If our
   client *doesn't* block it, that is item 1 above and very much in scope.
@@ -120,7 +120,7 @@ useful thing you can send.
 
 ## What to include
 
-- The hex-encoded transaction body, and the action URL that produced it.
+- The hex-encoded transaction body, and the Slip URL that produced it.
 - The endpoint's declared metadata.
 - What the client displayed, and what the transaction actually does.
 - Network (`preprod` or `mainnet`), wallet, and package versions.

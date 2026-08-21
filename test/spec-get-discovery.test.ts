@@ -25,7 +25,7 @@ import { describe, expect, it } from "vitest"
 
 const root = join(import.meta.dirname, "..")
 const specPath = join(root, "spec", "CIP-XXXX", "README.md")
-const schemaPath = join(root, "spec", "CIP-XXXX", "schemas", "action-get-response.schema.json")
+const schemaPath = join(root, "spec", "CIP-XXXX", "schemas", "slip-get-response.schema.json")
 const examples = join(root, "spec", "examples", "get")
 
 const source = readFileSync(specPath, "utf8")
@@ -279,5 +279,61 @@ describe("the CIP text and the schema", () => {
     expect(unavailable).toMatch(/MUST NOT hide a disabled action/)
     // Precedence, spelled out — a linked action cannot re-open a closed one.
     expect(unavailable).toMatch(/top level wins/)
+  })
+})
+
+/**
+ * The vocabulary the rename settled (ADR-0008).
+ *
+ * Three constants became load-bearing the moment the protocol stopped being
+ * called Actions: the discriminator a client switches on, the URI authority the
+ * CIP registers, and the discovery filename a publisher serves. Each is cited
+ * by third-party implementers and none of them was covered before, so a silent
+ * revert — or a half-finished re-rename later — would have passed CI.
+ *
+ * The last case here is the inverse guard. `links.actions` and `linkedAction`
+ * were deliberately *kept*: a Slip offers up to three actions, and those are
+ * choices within one Slip rather than Slips of their own. That decision is easy
+ * to undo by accident during a future sweep, so it is pinned too.
+ */
+describe("the vocabulary the rename settled", () => {
+  const properties = schema["properties"] as Record<string, Record<string, unknown>>
+  const defs = schema["$defs"] as Record<string, unknown>
+
+  it("discriminates a discovery response with type slip", () => {
+    expect(properties["type"]?.["const"]).toBe("slip")
+  })
+
+  it("carries that discriminator through every valid example", () => {
+    for (const file of fixtures("valid")) {
+      const doc = fixture("valid", file) as { type?: string }
+      expect(doc.type, `${file} does not declare type slip`).toBe("slip")
+    }
+  })
+
+  it("documents the same value in the CIP prose", () => {
+    // The prose table and the schema are the two places an implementer looks;
+    // they disagreeing is exactly the drift this file exists to catch.
+    expect(source).toContain('MUST be `"slip"`')
+    expect(source).not.toContain('MUST be `"action"`')
+  })
+
+  it("registers the //slip authority and nothing under //action", () => {
+    expect(source).toContain("`//slip`")
+    expect(source).not.toMatch(/web\+cardano:\/\/action/)
+    expect(source).not.toMatch(/`\/\/action`/)
+  })
+
+  it("names the discovery file slips.json", () => {
+    expect(source).toContain("slips.json")
+    expect(source).not.toMatch(/(^|[^-])actions\.json/m)
+  })
+
+  it("keeps linked actions named actions, which the rename left alone", () => {
+    // Deliberate: a Slip offers up to three actions. These are choices inside
+    // one Slip, not Slips in their own right.
+    const links = properties["links"] as { properties?: Record<string, unknown> }
+    expect(links.properties).toHaveProperty("actions")
+    expect(defs).toHaveProperty("linkedAction")
   })
 })

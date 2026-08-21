@@ -12,8 +12,8 @@ Not for want of trying. CIP-13's `web+cardano:` scheme has nine registered autho
 
 Three deliberately separate things:
 
-- **Action** — an HTTP endpoint hosted by the dApp. `GET` describes an intent (metadata); `POST` returns a **partial transaction** describing only the dApp's side.
-- **Link** — a shareable URL pointing at an Action, optionally fronted by a human marketing URL via `actions.json`.
+- **Slip** — an HTTP endpoint hosted by the dApp. `GET` describes an intent (metadata); `POST` returns a **partial transaction** describing only the dApp's side.
+- **Link** — a shareable URL pointing at a Slip, optionally fronted by a human marketing URL via `slips.json`.
 - **Client** — anything that renders the link and drives the wallet handoff. M1 client: the interstitial web page (desktop, CIP-30).
 
 ## 3. Protocol contract (v1)
@@ -21,7 +21,7 @@ Three deliberately separate things:
 ### GET — discovery
 Returns: `type`, `version`, `title`, `description`, `icon`, `label`, `network`, `links.actions[]` (each with `label`, `href`, optional `parameters[]` with `name/label/type/min/max/required`). Template placeholders like `{amount}` in `href`. Unavailable actions still respond with `disabled: true` and an `reason.message` — they render greyed out, never fail after the user commits.
 
-### actions.json — domain mapping
+### slips.json — domain mapping
 Served from the domain root, CORS-enabled: `rules[]` of `pathPattern` → `apiPath` with `*`/`**` wildcards. Lets `linktap.example/delegate/POOL1` resolve to the real endpoint while the shared link stays human.
 
 ### POST — build (Mode A, client-side balancing — the v1 default and only mode)
@@ -49,7 +49,7 @@ Derived effects are compared against declared metadata. **Any contradiction hard
 
 Effects prove *what* a transaction does. Identity answers *who is asking* — and it ships in two tiers, because the assurance a regulated issuer needs and the assurance a creator posting a tip link needs are not the same thing.
 
-**Tier 1 — domain attestation (the default).** A publisher serves a signed manifest at `https://<domain>/.well-known/cardano-actions.json` binding the domain to the action endpoints it vouches for. No chain write, no credential chain, no cost to publish. The client fetches it over the same origin it already resolved `actions.json` against and renders "published by `<domain>`, domain-verified". This is the tier every publisher gets, and its shape follows the origin-anchored precedent CIP-0186 set with `.well-known/cip30dl-attestation.json` rather than inventing a new one.
+**Tier 1 — domain attestation (the default).** A publisher serves a signed manifest at `https://<domain>/.well-known/cardano-slips.json` binding the domain to the Slip endpoints it vouches for. No chain write, no credential chain, no cost to publish. The client fetches it over the same origin it already resolved `slips.json` against and renders "published by `<domain>`, domain-verified". This is the tier every publisher gets, and its shape follows the origin-anchored precedent CIP-0186 set with `.well-known/cip30dl-attestation.json` rather than inventing a new one.
 
 **Tier 2 — CIP-0170 attestation (high assurance).** A KERI `ATTEST` record anchors a digest of the publisher manifest in the issuer's KEL and publishes the reference in transaction metadata under label `170`. Through the ACDC credential chain this binds the endpoint to a legally recognised entity — vLEI-grade identity, valid only between `AUTH_BEGIN` and `AUTH_END`. Issued and resolved via `signify-ts`.
 
@@ -61,20 +61,20 @@ Tier 1 is in M1 unconditionally. Tier 2 carries an explicit go/no-go at end of M
 
 ## 6. M1 scope (mainnet in 3 months)
 
-**In:** spec + CIP draft; `core`; `server` with one adapter (Next.js); the `verifier` effects engine; the `flow` client SDK; hosted + self-hostable interstitial; Tier-1 domain publisher attestation (Tier-2 CIP-0170 subject to the Month 1 go/no-go); AdaLink USDM/USDCx payment action live on mainnet; public adversarial corpus.
+**In:** spec + CIP draft; `core`; `server` with one adapter (Next.js); the `verifier` effects engine; the `flow` client SDK; hosted + self-hostable interstitial; Tier-1 domain publisher attestation (Tier-2 CIP-0170 subject to the Month 1 go/no-go); AdaLink USDM/USDCx payment Slip live on mainnet; public adversarial corpus.
 
-**Deferred (roadmap — do not build in M1):** mobile CIP-13 `//action` deep links; a CIP-186 transport for native mobile clients; browser extension inline rendering; server-side balancing (Mode B); additional framework adapters; additional action types.
+**Deferred (roadmap — do not build in M1):** mobile CIP-13 `//slip` deep links; a CIP-186 transport for native mobile clients; browser extension inline rendering; server-side balancing (Mode B); additional framework adapters; additional Slip types.
 
 On mobile, a shared link opened in a phone browser reaches a wallet through CIP-158 `//browse`, which lands the interstitial in the wallet's in-app browser where CIP-30 is injected and the desktop flow runs unchanged. CIP-186 is a separate case — the transport a *native mobile app* would use to be a client — and cannot carry the interstitial, because its source-app attestation requires an installed app. See `docs/ECOSYSTEM.md` §3.
 
 ## 7. Reference integration — AdaLink
 
-Stablecoin payment action: recipient, amount, USDM/USDCx choice; parameterised tip variant; human URLs (`/pay/HANDLE`) via actions.json. Declared metadata must exactly match derived effects. End-to-end on preprod first, then mainnet with transactions labelled with the registered message tag.
+Stablecoin payment Slip: recipient, amount, USDM/USDCx choice; parameterised tip variant; human URLs (`/pay/HANDLE`) via slips.json. Declared metadata must exactly match derived effects. End-to-end on preprod first, then mainnet with transactions labelled with the registered message tag.
 
 ## 8. What shipping means (each one ticketed)
 
-- Four packages published to npm under `@cardano-actions` with release notes and a fresh-install smoke test.
-- Developer documentation: quickstart, `actions.json` and client integration guides, effects-model explainer, self-host walkthrough.
+- Four packages published to npm under `@cardano-slips` with release notes and a fresh-install smoke test.
+- Developer documentation: quickstart, `slips.json` and client integration guides, effects-model explainer, self-host walkthrough.
 - Public adversarial corpus with a 100% block-rate report, plus a wallet compatibility matrix run on preprod.
 - CIP PR to `cardano-foundation/CIPs` — submitted after mainnet, documenting a running implementation.
 - Usage measured from external wallets only; transactions we generate ourselves are recorded and never counted.

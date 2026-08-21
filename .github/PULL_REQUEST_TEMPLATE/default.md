@@ -35,7 +35,7 @@ Tick only if this PR touches one. Breaking one of these is a bug whatever the
 ticket says; if the ticket seems to require it, stop and raise it on the issue.
 
 - [ ] `verifier` stays pure — no imports from `flow`, `server`, or any network layer.
-- [ ] The client still never sends the user's UTxO set to an action endpoint.
+- [ ] The client still never sends the user's UTxO set to a Slip endpoint.
 - [ ] A metadata/effects mismatch still hard-blocks signing, with no override path.
 - [ ] `signTx` still returns a witness set, assembled into the body before `submitTx`.
 - [ ] Nothing added here holds, custodies, or relays user funds.

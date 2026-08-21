@@ -28,8 +28,8 @@ to get the right one:
 
 ```sh
 corepack enable
-git clone https://github.com/emmanuel-musau/cardano-actions.git
-cd cardano-actions
+git clone https://github.com/emmanuel-musau/cardano-slips.git
+cd cardano-slips
 pnpm install
 ```
 
@@ -48,7 +48,7 @@ they are quick, and a red CI run is slower than a local one.
 
 ## Picking something to work on
 
-Work is driven by [GitHub issues](https://github.com/emmanuel-musau/cardano-actions/issues),
+Work is driven by [GitHub issues](https://github.com/emmanuel-musau/cardano-slips/issues),
 ordered by dependency. Maintainers mirror that ordering on an internal project
 board, and **the issue list is the public view of it** — it carries everything
 you need to pick something up.
@@ -206,7 +206,7 @@ the ticket asked for it — raise the conflict on the issue instead.
 1. `packages/verifier` stays a pure function of the transaction CBOR, the
    declared metadata, and the user's addresses. It must not import from
    `flow`, `server`, or any network layer.
-2. The client never sends the user's UTxO set to an action endpoint.
+2. The client never sends the user's UTxO set to a Slip endpoint.
 3. A metadata/effects mismatch always hard-blocks signing. No override paths,
    no allowlists, no "advanced user" escape hatch.
 4. `signTx` returns a witness set, not a signed transaction. Witnesses are
@@ -229,7 +229,7 @@ PR.
 
 Do not open a public issue for a vulnerability — particularly one that lets a
 transaction's real effects differ from what a user was shown. Use GitHub's
-[private vulnerability reporting](https://github.com/emmanuel-musau/cardano-actions/security/advisories/new)
+[private vulnerability reporting](https://github.com/emmanuel-musau/cardano-slips/security/advisories/new)
 instead.
 
 [SECURITY.md](SECURITY.md) has the full policy: what is in and out of scope,

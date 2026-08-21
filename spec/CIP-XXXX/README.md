@@ -1,6 +1,6 @@
 ---
 CIP: "?"
-Title: Cardano Actions
+Title: Cardano Slips
 Category: Wallets
 Status: Proposed
 Authors:
@@ -16,12 +16,12 @@ License: CC-BY-4.0
 
 ## Abstract
 
-This proposal defines *Cardano Actions*: a protocol by which an HTTP endpoint
+This proposal defines *Cardano Slips*: a protocol by which an HTTP endpoint
 describes an on-chain intent and returns an unsigned transaction, so that an
-ordinary URL can carry a specific, signable action to wherever a person already
+ordinary URL can carry a specific, signable intent to wherever a person already
 is — a social post, a chat message, a printed QR code.
 
-An Action is two HTTP methods on one endpoint. `GET` returns metadata
+A Slip is two HTTP methods on one endpoint. `GET` returns metadata
 describing the intent and its parameters. `POST` returns a *partial
 transaction* carrying only the publisher's side of it. A client resolves the
 link, balances the transaction locally against the user's own unspent outputs
@@ -35,8 +35,8 @@ a simulation of it. A client can therefore establish what a transaction does
 without trusting its publisher, and no registry of approved publishers is
 required.
 
-This proposal also registers the `//action` authority under [CIP-13], defines an
-`actions.json` mapping from human-readable paths to endpoints, and specifies the
+This proposal also registers the `//slip` authority under [CIP-13], defines an
+`slips.json` mapping from human-readable paths to endpoints, and specifies the
 unavailable and failure states a client must render.
 
 ## Motivation: Why is this CIP necessary?
@@ -52,7 +52,7 @@ authorities are registered under it. Four produce a transaction — payment,
 stake delegation, DRep delegation and token claims — and each fixes that
 transaction's shape in the URI itself, with a defined set of query parameters.
 The remainder reference chain data, open a URL in a wallet's browser, or pair a
-peer. Supporting a new kind of action therefore means writing a new CIP and
+peer. Supporting a new kind of Slip therefore means writing a new CIP and
 persuading every wallet to implement it, one at a time — a cost the support
 matrices for `//pay`, `//drep` and `//browse` make visible.
 
@@ -60,7 +60,7 @@ The nearest precedent is [CIP-99], which is Active with five wallet
 implementations and already has wallets send an HTTP `POST` to a project's own
 server from a link. What CIP-99 does not do is return a transaction for the user
 to authorise: its server builds, signs and submits the transaction itself and
-pays for it, which suits a faucet and cannot express an action the user
+pays for it, which suits a faucet and cannot express a Slip the user
 initiates. Across every registered authority, either the transaction shape is
 fixed in the URI or the server signs. Nothing lets a publisher express an
 arbitrary intent that the user authorises.
@@ -91,9 +91,9 @@ appear in all capitals.
 
 Three roles are referred to throughout:
 
-- **Action endpoint** — the HTTP resource that answers `GET` and `POST`.
+- **Slip endpoint** — the HTTP resource that answers `GET` and `POST`.
 - **Publisher** — the party operating the endpoint.
-- **Client** — software that resolves a link, renders the action, derives the
+- **Client** — software that resolves a link, renders the Slip, derives the
   effects of the resulting transaction, and drives the wallet.
 
 Every payload defined here has a JSON Schema under
@@ -104,7 +104,7 @@ test corpus in [`../examples/`](../examples).
 
 ### Discovery
 
-A client discovers an action by issuing `GET` to the action endpoint.
+A client discovers a Slip by issuing `GET` to the Slip endpoint.
 
 The request carries no body. A client MUST NOT send credentials — no cookies,
 no `Authorization` header — and an endpoint MUST NOT require them in order to
@@ -114,7 +114,7 @@ its preview, and an endpoint therefore learns nothing about a person from the
 fact that a card was rendered.
 
 ```http
-GET /api/actions/pay/corner-store HTTP/1.1
+GET /api/slips/pay/corner-store HTTP/1.1
 Host: linktap.example
 Accept: application/json
 ```
@@ -134,7 +134,7 @@ Cache-Control: public, max-age=60
 
 The response MUST NOT vary by requester identity, and SHOULD be cacheable.
 
-An action that cannot currently be used MUST still answer `200` with a complete
+A Slip that cannot currently be used MUST still answer `200` with a complete
 body and `disabled` set, as described under [Unavailable
 actions](#unavailable-actions). Reporting unavailability with a non-2xx status
 is non-conforming: it turns a state the client can render into a failure the
@@ -147,16 +147,16 @@ The response body is a single JSON object.
 
 | Field | Required | Type | Rule |
 |---|---|---|---|
-| `type` | yes | string | MUST be `"action"`. Discriminates discovery metadata from the partial intent `POST` returns. |
+| `type` | yes | string | MUST be `"slip"`. Discriminates discovery metadata from the partial intent `POST` returns. |
 | `version` | yes | string | The major version of this protocol the response speaks, in decimal, with no leading zero. `"1"` for this document. |
-| `title` | yes | string | What the action does, in the publisher's own words. 1–120 characters. |
+| `title` | yes | string | What the Slip does, in the publisher's own words. 1–120 characters. |
 | `description` | yes | string | Plain text, 1–500 characters. MUST NOT contain markup; a client MUST render it as text. |
 | `icon` | yes | string | Absolute `https:` URL of a square image. `data:` URIs MUST NOT be used — the same image is fetched by link unfurlers that never execute the publisher's code. |
-| `label` | yes | string | The action's call to action, 1–48 characters. Labels the single button when `links` is absent; where `links` is present a client MUST render the linked actions and use `label` only where one string is all that fits, such as a link preview. |
+| `label` | yes | string | The Slip's call to action, 1–48 characters. Labels the single button when `links` is absent; where `links` is present a client MUST render the linked actions and use `label` only where one string is all that fits, such as a link preview. |
 | `network` | yes | string | One of `mainnet`, `preprod`, `preview`. A client MUST NOT `POST` while the connected wallet is on a different network. |
-| `links` | no | object | Carries `actions`, an array of 1–3 [linked actions](#linked-actions). When absent, the action is a single button labelled `label` whose target is the discovery URL itself. |
+| `links` | no | object | Carries `actions`, an array of 1–3 [linked actions](#linked-actions). When absent, the Slip is a single button labelled `label` whose target is the discovery URL itself. |
 | `disabled` | no | boolean | When `true`, nothing in this response may be signed. See [Unavailable actions](#unavailable-actions). |
-| `reason` | no | object | Why the action is unavailable. Valid only alongside `disabled`. |
+| `reason` | no | object | Why the Slip is unavailable. Valid only alongside `disabled`. |
 
 A client MUST reject a response carrying a member not defined above. An
 undefined member is either a newer version the client has not been told about
@@ -169,7 +169,7 @@ taxonomy.
 
 ```json
 {
-  "type": "action",
+  "type": "slip",
   "version": "1",
   "network": "mainnet",
   "icon": "https://linktap.example/i/corner-store.png",
@@ -179,7 +179,7 @@ taxonomy.
 }
 ```
 
-Every field above describes the action; none of it describes the person, and
+Every field above describes the Slip; none of it describes the person, and
 nothing in discovery is a promise about the transaction. `title` and
 `description` are claims by the publisher, checked later against the effects a
 client derives from the transaction body itself.
@@ -203,10 +203,10 @@ action against the same publisher.
 
 A client MUST resolve `href` against the discovery URL, and MUST reject the
 response unless every resolved target has the same origin as the discovery URL.
-An action that hands a person to a third party for the transaction is
+A Slip that hands a person to a third party for the transaction is
 indistinguishable from a hijacked link, and [CIP-13]'s own security
 considerations raise exactly that concern. Where a publisher wants a human URL
-in front of a technical endpoint, `actions.json` is the sanctioned indirection.
+in front of a technical endpoint, `slips.json` is the sanctioned indirection.
 
 The cap of three is a property of the shape, not of any client: a publisher
 offering more choices expresses them as a `select` parameter, which stays
@@ -214,7 +214,7 @@ legible at any width and keeps a card from becoming a menu.
 
 ```json
 {
-  "type": "action",
+  "type": "slip",
   "version": "1",
   "network": "mainnet",
   "icon": "https://fund.linktap.example/i/community-fund.png",
@@ -223,11 +223,11 @@ legible at any width and keeps a card from becoming a menu.
   "label": "Contribute",
   "links": {
     "actions": [
-      { "label": "Contribute 25 USDM", "href": "/api/actions/fund/community?amount=25&token=usdm" },
-      { "label": "Contribute 100 USDM", "href": "/api/actions/fund/community?amount=100&token=usdm" },
+      { "label": "Contribute 25 USDM", "href": "/api/slips/fund/community?amount=25&token=usdm" },
+      { "label": "Contribute 100 USDM", "href": "/api/slips/fund/community?amount=100&token=usdm" },
       {
         "label": "Contribute {amount} {token}",
-        "href": "/api/actions/fund/community?amount={amount}&token={token}",
+        "href": "/api/slips/fund/community?amount={amount}&token={token}",
         "parameters": [
           { "name": "amount", "label": "Amount", "type": "number", "min": 1, "max": 500, "required": true },
           {
@@ -316,7 +316,7 @@ requests that genuinely fail are specified with the error taxonomy.
 
 ```json
 {
-  "type": "action",
+  "type": "slip",
   "version": "1",
   "network": "mainnet",
   "icon": "https://linktap.example/i/community-pool.svg",
@@ -330,7 +330,7 @@ requests that genuinely fail are specified with the error taxonomy.
 
 ```json
 {
-  "type": "action",
+  "type": "slip",
   "version": "1",
   "network": "preprod",
   "icon": "https://linktap.example/i/builders-workshop.png",
@@ -339,10 +339,10 @@ requests that genuinely fail are specified with the error taxonomy.
   "label": "Reserve a seat",
   "links": {
     "actions": [
-      { "label": "General seat — 25 USDM", "href": "/api/actions/workshop/reserve?tier=general" },
+      { "label": "General seat — 25 USDM", "href": "/api/slips/workshop/reserve?tier=general" },
       {
         "label": "Front row — 75 USDM",
-        "href": "/api/actions/workshop/reserve?tier=front",
+        "href": "/api/slips/workshop/reserve?tier=front",
         "disabled": true,
         "reason": { "message": "Front row is sold out. General seats are still available." }
       }
@@ -355,13 +355,13 @@ requests that genuinely fail are specified with the error taxonomy.
 Filled incrementally, one section per issue. Add subsections here rather than
 new top-level headings — CIP-0001 fixes the H2 set.
 
-  #16  actions.json domain mapping
+  #16  slips.json domain mapping
   #17  POST request/response and the partial-intent format (Mode A)
   #18  error-code taxonomy and versioning strategy
   #19  mandatory client-side effects derivation and mismatch rules
   #20  security considerations
 
-The `//action` authority registration and its versioned grammar belong here
+The `//slip` authority registration and its versioned grammar belong here
 too — see docs/DECISIONS/0007-action-authority.md. Shapes freeze at #21.
 -->
 

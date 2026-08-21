@@ -5,7 +5,7 @@ How the pieces fit, what each package owns, and the dependency rules that keep t
 ## Repository layout
 
 ```
-cardano-actions/
+cardano-slips/
 ├── .github/
 │   ├── workflows/ci.yml       lint, typecheck, test, build on every PR
 │   ├── workflows/release.yml  Changesets → version PR, then npm on merge
@@ -14,21 +14,21 @@ cardano-actions/
 │   └── CODEOWNERS             spec/ and packages/verifier/ route to the tech lead
 ├── spec/
 │   ├── CIP-XXXX/
-│   │   ├── README.md          the CIP: //action authority, GET/POST shapes,
+│   │   ├── README.md          the CIP: //slip authority, GET/POST shapes,
 │   │   │                      partial-intent format, error codes
 │   │   └── schemas/           JSON Schema for every payload, consumed by core
 │   └── examples/              canonical request/response pairs
 ├── packages/
-│   ├── core/                  types, URL resolution, actions.json, validation
+│   ├── core/                  types, URL resolution, slips.json, validation
 │   ├── verifier/              CBOR decode → deltas. The security engine.
-│   ├── server/                defineAction() + Next.js adapter
+│   ├── server/                defineSlip() + Next.js adapter
 │   ├── identity/              publisher attestation: domain manifest + CIP-0170
 │   └── flow/                  React components + CIP-30 orchestration
 ├── apps/
 │   ├── interstitial/          hosted + self-hostable fallback page
-│   └── docs/                  docs site + the Action tester
+│   └── docs/                  docs site + the Slip tester
 ├── examples/
-│   └── adalink/               reference integration: USDM/USDCx payment action
+│   └── adalink/               reference integration: USDM/USDCx payment Slip
 ├── docs/                      requirements, architecture, workflow, ADRs
 ├── .changeset/
 ├── pnpm-workspace.yaml        packages/*, apps/*, examples/*
@@ -42,31 +42,31 @@ cardano-actions/
 └── LICENSE                    MIT
 ```
 
-Deferred to roadmap, **not** built in M1: `packages/deeplink` (CIP-13 `//action`), `apps/extension` (inline renderer).
+Deferred to roadmap, **not** built in M1: `packages/deeplink` (CIP-13 `//slip`), `apps/extension` (inline renderer).
 
 ## Package responsibilities
 
 ### `core`
-Shared vocabulary. Effect Schema definitions for the GET metadata response and the partial-intent POST response; `actions.json` fetch + pathPattern resolution; parameter template interpolation (`{amount}`). Depends on nothing else in the workspace. Both `server` (produce) and `flow` (consume) validate against these schemas, which makes the schema the executable form of the spec.
+Shared vocabulary. Effect Schema definitions for the GET metadata response and the partial-intent POST response; `slips.json` fetch + pathPattern resolution; parameter template interpolation (`{amount}`). Depends on nothing else in the workspace. Both `server` (produce) and `flow` (consume) validate against these schemas, which makes the schema the executable form of the spec.
 
 | Module | Owns |
 |---|---|
-| `types.ts` | `Action`, `Parameter`, `PartialIntent`, `DerivedEffects` — what a third-party implementer reads first |
-| `url.ts` | Parse, resolve, validate action URLs; the human URL → technical endpoint indirection |
-| `actions-json.ts` | Domain mapping rules, so `linktap.example/pay/corner-store` resolves to `/api/actions/pay` |
+| `types.ts` | `Slip`, `Parameter`, `PartialIntent`, `DerivedEffects` — what a third-party implementer reads first |
+| `url.ts` | Parse, resolve, validate Slip URLs; the human URL → technical endpoint indirection |
+| `actions-json.ts` | Domain mapping rules, so `linktap.example/pay/corner-store` resolves to `/api/slips/pay` |
 | `errors.ts` | Typed error taxonomy — every failure mode the UI must render has a code here |
 
 Zero runtime dependencies is the goal.
 
 ### `server`
-`defineAction({ get, post })` — typed handlers whose output is validated against `core` schemas *before it leaves the server*, so a misconfigured dApp fails at its own boundary rather than at the user's wallet. One framework adapter in M1 (Next.js App Router): route handlers, CORS headers, `actions.json` serving, spec error codes mapped to HTTP status. Hono and Express adapters are deferred past M1.
+`defineSlip({ get, post })` — typed handlers whose output is validated against `core` schemas *before it leaves the server*, so a misconfigured dApp fails at its own boundary rather than at the user's wallet. One framework adapter in M1 (Next.js App Router): route handlers, CORS headers, `slips.json` serving, spec error codes mapped to HTTP status. Hono and Express adapters are deferred past M1.
 
 | Module | Owns |
 |---|---|
 | `define-action.ts` | The core helper: `get` + `post` handlers → validated, spec-compliant endpoint with CORS and error handling built in |
 | `adapters/nextjs.ts` | Framework binding |
 
-The whole developer-experience promise — an Action in about twenty lines — is this package's job.
+The whole developer-experience promise — a Slip in about twenty lines — is this package's job.
 
 ### `verifier` — the security engine
 Decodes balanced transaction CBOR and derives, independently of anything the endpoint claimed:
@@ -100,7 +100,7 @@ Publisher attestation: issue and resolve, in two tiers (REQUIREMENTS §5).
 
 | Tier | Mechanism | What the client renders |
 |---|---|---|
-| 1 | Signed manifest at `https://<domain>/.well-known/cardano-actions.json`, binding the domain to the endpoints it vouches for. No chain write. | published by `<domain>`, domain-verified |
+| 1 | Signed manifest at `https://<domain>/.well-known/cardano-slips.json`, binding the domain to the endpoints it vouches for. No chain write. | published by `<domain>`, domain-verified |
 | 2 | CIP-0170 KERI `ATTEST` — digest of the Tier-1 manifest anchored in the issuer's KEL, referenced in tx metadata label `170`, chained to a vLEI-grade entity via `signify-ts` | published by `<legal entity>`, identity-verified |
 
 Tier 2 sits on top of Tier 1 rather than beside it: the manifest is the payload being attested, and Tier 1 is also what supplies domain→AID discovery, which CIP-0170 does not define. The manifest shape follows CIP-0186's origin-anchored `.well-known/cip30dl-attestation.json` precedent — same trust anchor, same 24h cache posture — so a wallet team reading both sees one pattern.
@@ -110,7 +110,7 @@ Resolution is read-only and cacheable; issuance is a publisher-side operation an
 **Why it is its own package.** Tier 2 is the piece most likely to be cut at the Month 1 go/no-go — it is pre-production, new to the team, and its verification path depends on KEL availability the CIP itself calls immature. As a separate package, cutting it means deleting a dependency line; folded into `flow`, it means untangling code under time pressure. This split is a scope-risk hedge, not an architectural preference — and it is why the tiers are separable at all.
 
 ### `flow`
-CIP-30 orchestration plus React components. Wallet discovery/enable, change address + network id, local balancing via `@evolution-sdk/evolution` against the user's own UTxOs, effects derivation, `signTx` → witness assembly → `submitTx`, and rebuild-and-retry when UTxOs move mid-flow. Components: action card, generated parameter form, effects panel with the mismatch block, publisher chip, wallet selector, receipt, error states. Hooks (`useAction`, `useWallet`, `useEffects`) are the composable surface.
+CIP-30 orchestration plus React components. Wallet discovery/enable, change address + network id, local balancing via `@evolution-sdk/evolution` against the user's own UTxOs, effects derivation, `signTx` → witness assembly → `submitTx`, and rebuild-and-retry when UTxOs move mid-flow. Components: Slip card, generated parameter form, effects panel with the mismatch block, publisher chip, wallet selector, receipt, error states. Hooks (`useSlip`, `useWallet`, `useEffects`) are the composable surface.
 
 `tokens.css` holds the design tokens as CSS custom properties and is the single source of truth — no hard-coded hex anywhere in components.
 
@@ -120,10 +120,10 @@ Must survive being dropped into a third-party page: no fixed positioning, no ass
 Tier-1 client and the M1 headline: a hosted, self-hostable page that runs the whole flow with zero wallet cooperation beyond CIP-30. Also owns OG/Twitter preview metadata, since the unfurl is the first impression of a shared link.
 
 ### `apps/docs`
-Documentation site and the Action tester — paste an endpoint URL, see the rendered card alongside the raw GET/POST payloads. The tester is the single best adoption tool in the project: a developer verifies their endpoint in seconds without installing anything.
+Documentation site and the Slip tester — paste an endpoint URL, see the rendered card alongside the raw GET/POST payloads. The tester is the single best adoption tool in the project: a developer verifies their endpoint in seconds without installing anything.
 
 ### `examples/adalink`
-Reference integration, not a library. Proves the SDK on a product with real users: USDM/USDCx payment actions, human URLs via `actions.json`, live on mainnet with labelled transactions.
+Reference integration, not a library. Proves the SDK on a product with real users: USDM/USDCx payment Slips, human URLs via `slips.json`, live on mainnet with labelled transactions.
 
 ## Dependency rules
 
@@ -233,7 +233,7 @@ Test sources are typechecked but never emitted, so root `tsconfig.test.json` tur
 
 ## The two data flows
 
-**Build (Mode A, the only v1 mode).** Client resolves the link through `actions.json` → `GET` metadata → renders card → wallet connect → `POST { changeAddress, network }` → server returns a *partial* intent (its side only) → **client balances locally** → complete unsigned tx. The endpoint never sees the user's UTxO set; that is the privacy advantage we extracted from the eUTxO input-selection constraint.
+**Build (Mode A, the only v1 mode).** Client resolves the link through `slips.json` → `GET` metadata → renders card → wallet connect → `POST { changeAddress, network }` → server returns a *partial* intent (its side only) → **client balances locally** → complete unsigned tx. The endpoint never sees the user's UTxO set; that is the privacy advantage we extracted from the eUTxO input-selection constraint.
 
 **Sign.** Derive effects → compare → block on mismatch, otherwise show exact effects → `signTx` (returns a **witness set**, not a signed tx) → assemble witnesses into the body → `submitTx` → receipt. On input-spent failure, rebuild from fresh UTxOs, re-derive effects, and only then re-prompt.
 

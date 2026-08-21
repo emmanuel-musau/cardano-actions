@@ -1,6 +1,6 @@
 # ADR-0007: Claim `//action` as the URI authority, register it through CPS-16, and keep it out of M1
 
-**Status:** Accepted
+**Status:** Superseded by [ADR-0008](0008-rename-to-slips.md)
 **Date:** 2026-08-20
 **Issue:** TBD — CIP draft. Registration lands with the CIP PR (#71).
 

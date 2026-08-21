@@ -42,11 +42,11 @@ body:
     attributes:
       label: Where it belongs
       options:
-        - "@cardano-actions/core"
-        - "@cardano-actions/verifier"
-        - "@cardano-actions/server"
-        - "@cardano-actions/identity"
-        - "@cardano-actions/flow"
+        - "@cardano-slips/core"
+        - "@cardano-slips/verifier"
+        - "@cardano-slips/server"
+        - "@cardano-slips/identity"
+        - "@cardano-slips/flow"
         - apps/interstitial
         - examples/adalink
         - repo tooling (CI, build, lint)
@@ -63,6 +63,6 @@ body:
           required: true
         - label: >-
             This does not require holding user funds, sending the user's UTxO
-            set to an action endpoint, or overriding a metadata/effects
+            set to a Slip endpoint, or overriding a metadata/effects
             mismatch. Those are settled constraints, not open trade-offs.
           required: true
