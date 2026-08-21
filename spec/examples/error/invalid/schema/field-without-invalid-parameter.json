@@ -1,0 +1,7 @@
+{
+  "type": "error",
+  "version": "1",
+  "code": "UNAVAILABLE",
+  "message": "That option is no longer offered.",
+  "field": "tier"
+}

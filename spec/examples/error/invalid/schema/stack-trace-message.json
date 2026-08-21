@@ -1,0 +1,6 @@
+{
+  "type": "error",
+  "version": "1",
+  "code": "INTERNAL_ERROR",
+  "message": "TypeError: Cannot read properties of undefined (reading 'utxo')\n    at buildIntent (/srv/linktap/dist/build.js:214:31)\n    at async collectQuote (/srv/linktap/dist/pricing/quote.js:57:14)\n    at async POST (/srv/linktap/dist/routes/slips.js:88:20)\n    at async run (/srv/linktap/node_modules/.pnpm/next/dist/server/handler.js:1140:9)"
+}

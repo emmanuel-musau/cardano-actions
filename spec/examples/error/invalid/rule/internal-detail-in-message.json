@@ -1,0 +1,6 @@
+{
+  "type": "error",
+  "version": "1",
+  "code": "UPSTREAM_FAILURE",
+  "message": "pricing-svc-7f4c9 returned 503 from https://internal.linktap.example/v2/quote?asset=usdm"
+}

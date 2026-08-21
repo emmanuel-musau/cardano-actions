@@ -1,0 +1,6 @@
+{
+  "type": "error",
+  "version": "1",
+  "code": "UPSTREAM_FAILURE",
+  "message": "The price feed this Slip depends on is not responding. Nothing was charged."
+}

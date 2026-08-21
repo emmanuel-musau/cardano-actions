@@ -1,0 +1,6 @@
+{
+  "type": "error",
+  "version": "1",
+  "code": "WRONG_NETWORK",
+  "message": "This Slip is for preprod. The connected wallet is on mainnet."
+}

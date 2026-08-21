@@ -1,0 +1,6 @@
+{
+  "type": "error",
+  "version": "1",
+  "code": "NOT_FOUND",
+  "message": "There is no Slip at this link. It may have been moved."
+}

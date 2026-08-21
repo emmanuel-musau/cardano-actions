@@ -1,0 +1,5 @@
+{
+  "type": "error",
+  "code": "INTERNAL_ERROR",
+  "message": "Something went wrong building this transaction."
+}

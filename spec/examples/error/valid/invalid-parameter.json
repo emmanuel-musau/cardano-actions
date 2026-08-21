@@ -1,0 +1,7 @@
+{
+  "type": "error",
+  "version": "1",
+  "code": "INVALID_PARAMETER",
+  "message": "Amount must be between 1 and 500 USDM.",
+  "field": "amount"
+}

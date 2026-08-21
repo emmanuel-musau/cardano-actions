@@ -1,0 +1,6 @@
+{
+  "type": "error",
+  "version": "1",
+  "code": "UNAVAILABLE",
+  "message": "<strong>Sold out.</strong> Try the <a href=\"https://linktap.example/waitlist\">waitlist</a>."
+}
