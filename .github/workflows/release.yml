@@ -23,13 +23,30 @@ jobs:
   version:
     name: version PR
     runs-on: ubuntu-latest
+    # Only what `checkout` needs. The two writes this job performs — pushing
+    # the version branch and opening the PR — are authorised by the App token
+    # below, not by this grant, so `GITHUB_TOKEN` never needs write here.
     permissions:
-      contents: write # push the version commit
-      pull-requests: write # open/update the version PR
+      contents: read
     outputs:
       mode: ${{ steps.mode.outputs.mode }}
 
     steps:
+      # A pull request opened with the default `GITHUB_TOKEN` does not trigger
+      # workflows. That is GitHub's recursion guard and it is not configurable:
+      # `ci.yml` would never run on the version PR, its four required checks
+      # would never report, and the PR could not be merged without weakening
+      # branch protection for every PR in the repository. An App installation
+      # token is not `GITHUB_TOKEN`, so the PR it opens is checked like any
+      # other — and unlike a PAT it is short-lived and scoped to this repo.
+      #
+      # The App needs Contents: read & write and Pull requests: read & write.
+      - uses: actions/create-github-app-token@v3
+        id: app-token
+        with:
+          app-id: ${{ secrets.RELEASE_APP_ID }}
+          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+
       - uses: actions/checkout@v7
         with:
           # Changesets reads history to work out what changed since the tag.
@@ -43,6 +60,17 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      # The same four gates `main` requires, re-run on this commit rather than
+      # trusted from whichever CI run happened earlier. `publish` declares
+      # `needs: version`, so one pass gates both paths at once: nothing is
+      # proposed for release and nothing is published unless all four are green
+      # here. Sequential rather than a matrix — this is a gate on one commit,
+      # not a fan-out whose individual red X anyone reads.
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm build
+      - run: pnpm test
+
       # `version` when changesets are pending, `publish` when none are and
       # there are publishable packages, `none` otherwise.
       - uses: changesets/action/select-mode@v2.1.1
@@ -54,12 +82,17 @@ jobs:
           script: pnpm version:packages
           commit-message: "chore: version packages"
           pr-title: "chore: version packages"
+          # `push-with-git-cli` is left at its default of false, so the commit
+          # goes through the GitHub API: signed with GitHub's GPG key and
+          # attributed to the App that owns this token.
+          github-token: ${{ steps.app-token.outputs.token }}
         env:
           # Read by @changesets/changelog-github, which resolves each
           # changeset's commit to its PR and author. Without it `changeset
           # version` throws — the action's own token input does not reach the
-          # version script.
-          GITHUB_TOKEN: ${{ github.token }}
+          # version script. It gets the App token too, so both the action and
+          # the script it spawns speak as the same identity.
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
 
   publish:
     name: publish
