@@ -40,11 +40,18 @@ jobs:
       # token is not `GITHUB_TOKEN`, so the PR it opens is checked like any
       # other — and unlike a PAT it is short-lived and scoped to this repo.
       #
-      # The App needs Contents: read & write and Pull requests: read & write.
+      # The App needs Contents: read & write and Pull requests: read & write,
+      # and it must be *installed* on this repository — creating it is not
+      # enough. Without an installation this step fails with a 404 from
+      # `get-a-repository-installation-for-the-authenticated-app`, which is
+      # distinct from the 401 that bad credentials produce.
+      #
+      # `client-id` rather than `app-id`: v3 deprecated the numeric App ID in
+      # favour of the client id on the same settings page.
       - uses: actions/create-github-app-token@v3
         id: app-token
         with:
-          app-id: ${{ secrets.RELEASE_APP_ID }}
+          client-id: ${{ secrets.RELEASE_APP_CLIENT_ID }}
           private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
 
       - uses: actions/checkout@v7
@@ -121,6 +128,13 @@ jobs:
           runtime: node@22
           cache: true
           install: false
+
+      # Trusted publishing requires npm 11.5.1 or later, and Node 22 bundles
+      # npm 10.x — without this step the OIDC exchange below fails whatever
+      # else is configured. Pinned to the 11.x line rather than latest: npm 12
+      # rejects the `--no-git-checks` flag that changesets passes when
+      # publishing a pnpm workspace.
+      - run: npm install -g npm@11
 
       - run: pnpm install --frozen-lockfile
 
