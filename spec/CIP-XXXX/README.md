@@ -164,8 +164,8 @@ or a payload it has misidentified, and both are safer refused than rendered.
 
 `version` is matched as a decimal string rather than pinned to `"1"`, so that a
 client meeting a future major version can tell an unsupported protocol from a
-malformed response. What it does about that is specified with the error
-taxonomy.
+malformed response. What it does about that is specified under [Protocol
+versioning](#protocol-versioning).
 
 ```json
 {
@@ -312,7 +312,8 @@ with no way for the publisher to know.
 OPTIONAL machine-readable `code` naming the unavailability. A `code` here is not
 a failure code: the request succeeded, and the response is describing the state
 of the action rather than reporting that something went wrong. Codes for
-requests that genuinely fail are specified with the error taxonomy.
+requests that genuinely fail are specified under [Failure
+responses](#failure-responses).
 
 ```json
 {
@@ -351,15 +352,184 @@ requests that genuinely fail are specified with the error taxonomy.
 }
 ```
 
+### Failure responses
+
+A request that cannot be answered fails with a non-2xx status and a body of the
+shape defined here.
+
+This is not the same thing as an action that cannot be used. `disabled` and its
+`reason` describe a Slip that was served successfully and currently offers
+nothing to sign; a failure response says the exchange itself did not happen. The
+body's discriminator is `"error"` for that reason, and this document says
+*failure* throughout to keep the two apart in prose.
+
+An endpoint MUST NOT report at `POST` a state it could have reported at `GET`.
+Where the state genuinely changed between the two — the last seat was taken, a
+deadline passed — the codes below carry it, and a client meeting one MUST
+re-fetch discovery, so that the person is shown the same closed card everyone
+else can now see rather than a failure private to them.
+
+| Field | Required | Type | Rule |
+|---|---|---|---|
+| `type` | yes | string | MUST be `"error"`. Discriminates a failure from the shapes `GET` and `POST` return on success. |
+| `version` | yes | string | The major version of this protocol the endpoint speaks, under the same rule as discovery. Present on the failure path so that a client which cannot read a response can still learn what it was. |
+| `code` | yes | string | One of the codes in the table below. Names what a client does next, not what went wrong inside the endpoint. |
+| `message` | yes | string | Plain text addressed to the person, 1–300 characters. MUST NOT contain markup; a client MUST render it as text. MUST NOT carry internal detail — no stack traces, no query text, no upstream URLs, no identifiers of the publisher's own systems. |
+| `field` | no | string | The `name` of the parameter at fault, so a client can attach `message` to the field that caused it. Valid only alongside `code: "INVALID_PARAMETER"`. |
+
+A client MUST reject a failure body carrying a member not defined above, for the
+same reason it rejects one in discovery.
+
+A failure response MUST set `Content-Type` to `application/json` and MUST set
+`Access-Control-Allow-Origin: *`. A client executes on an origin the publisher
+does not control, and without that header on the failure path the browser
+withholds the body: every failure then reaches the person as an unexplained one,
+including the failures they could have corrected themselves. A failure response
+MUST NOT be cached, and SHOULD set `Cache-Control: no-store`.
+
+**The taxonomy.** Every code belongs to one of three classes, and the class is
+what a client acts on. The class is a property of the code, fixed by this
+document, and is deliberately not a field: an endpoint able to declare its own
+failure retryable is an endpoint able to keep a client asking.
+
+| Code | Class | Status | Raised by | Rule |
+|---|---|---|---|---|
+| `INVALID_PARAMETER` | request | 400 | endpoint | A submitted value was rejected. `field` names it where a single parameter is at fault. |
+| `WRONG_NETWORK` | request | 400 | endpoint, client | The Slip's `network` and the connected wallet's network do not agree. |
+| `NOT_FOUND` | terminal | 404 | endpoint | Nothing at this URL describes a Slip. |
+| `UNAVAILABLE` | terminal | 409 | endpoint | The action is closed for now, and may open again. |
+| `EXPIRED` | terminal | 410 | endpoint | The Slip had a deadline and it has passed. This is permanent. |
+| `MALFORMED_RESPONSE` | terminal | — | client | A response arrived that this protocol cannot read. |
+| `UNSUPPORTED_VERSION` | terminal | — | client | The response is in a major version this client does not implement. |
+| `RATE_LIMITED` | transient | 429 | endpoint | The endpoint is deliberately refusing for now. `Retry-After` SHOULD be set. |
+| `UPSTREAM_FAILURE` | transient | 502 | endpoint | A service the endpoint depends on failed. |
+| `INTERNAL_ERROR` | transient | 500 | endpoint | The endpoint failed and cannot say more than that. |
+| `UNREACHABLE` | transient | — | client | No usable response: DNS, TLS, a timeout, or a cross-origin request the browser refused. |
+
+An endpoint MUST send each code with the status paired with it above, and MUST
+NOT send a code the table marks as raised only by a client. Those carry no
+status because nothing usable was received: they name a failure of the exchange
+itself, and they exist so that a client renders every failure through one
+vocabulary rather than showing the publisher's words for one half of them and a
+browser exception for the other. `WRONG_NETWORK` is raised by both, because the
+same disagreement is observable at two points — by a client before it sends, and
+by an endpoint reading `network` out of what arrived.
+
+What each class obliges of a client:
+
+- **request** — the person or the client can act. A client MUST return to the
+  state the request was made from with `message` shown against `field` where one
+  is given, and MUST NOT retry the identical request.
+- **terminal** — this Slip will not produce a transaction, and repeating the
+  request cannot change that. A client MUST stop and MUST render `message`.
+- **transient** — the same request may succeed later. A client MAY retry, and
+  before each attempt MUST wait at least the interval given by `Retry-After`, or
+  at least one second where none is given. Successive intervals MUST increase,
+  and the attempts MUST be bounded. `Retry-After` is only a SHOULD on the
+  endpoint, so without a floor and a growing interval the polite path and the
+  one that hammers a struggling publisher are the same code. Retrying is
+  otherwise safe by construction: a `POST` returns a transaction and signs
+  nothing, so no retry can duplicate an on-chain effect.
+
+Two schemas govern this body, and they bind different parties. An endpoint
+conforms to [`slip-error-response-endpoint.schema.json`](./schemas/slip-error-response-endpoint.schema.json),
+which admits only the codes marked `endpoint` above. A client validates against
+[`slip-error-response.schema.json`](./schemas/slip-error-response.schema.json),
+which constrains `code` to the shape of a code and not to that list. A client
+able to read only the codes it already knows would discard a publisher's
+`message` over a value it could have rendered, and would report a condition this
+document defines as an unreadable response.
+
+A client MUST classify a failure by the first of these that applies:
+
+1. A body that is not JSON, or that does not satisfy the client schema, is not a
+   failure response at all. The client MUST classify by status alone — `429` and
+   `5xx` as transient, every other status as terminal — and MUST NOT render any
+   part of it. An unparsed body is as likely to be an intermediary's HTML error
+   page as it is the publisher's words.
+2. A body that satisfies the client schema but carries a `code` this document
+   does not define is terminal, and the client MUST render its `message`. The
+   other two classes each authorise the client to act again, by retrying or by
+   resubmitting a corrected request, and neither is safe to do on a failure whose
+   meaning is unknown. A disagreeing status MUST NOT override this: an
+   uninterpretable code arriving with a status that says to try again is the one
+   combination that could hold a client in a loop it cannot reason about.
+3. Otherwise the client MUST classify by `code`, and MUST ignore a status that
+   contradicts it.
+
+A code this document does not define means a non-conforming endpoint, not a
+newer one. A response from a later major version never reaches this rule,
+because the version check precedes it — see [Protocol
+versioning](#protocol-versioning).
+
+Conditions arising after a transaction exists — derived effects contradicting
+declared metadata, a refused signature, a rejected submission — are named where
+those steps are specified. They are client conditions in this same vocabulary
+and never travel over HTTP.
+
+```json
+{
+  "type": "error",
+  "version": "1",
+  "code": "INVALID_PARAMETER",
+  "message": "Amount must be between 1 and 500 USDM.",
+  "field": "amount"
+}
+```
+
+```json
+{
+  "type": "error",
+  "version": "1",
+  "code": "EXPIRED",
+  "message": "This campaign closed on 12 August. Nothing can be signed from this link."
+}
+```
+
+### Protocol versioning
+
+`version` carries a major version and nothing else. Discovery responses, the
+partial intents `POST` returns, and failure bodies all carry the same value, and
+it is the only compatibility signal in this protocol: a client MUST NOT infer
+what an endpoint supports from the presence or absence of any field.
+
+There are no minor versions, because there is nothing left for one to describe.
+A client MUST reject a response carrying an undefined member, so a field cannot
+be added to a shape compatibly, and a change that cannot be ignored is not a
+minor change. Every change to a shape is therefore a new major version, and the
+number stays a single integer.
+
+**One URL speaks one major version.** There is no negotiation. A client sends no
+version, and an endpoint MUST NOT vary the response body by request header:
+discovery is required to return the same bytes to every requester, and a
+response that turns on a header is neither cacheable nor the same document a
+link unfurler fetched. A publisher supporting two major versions publishes one
+URL per version, exactly as it already publishes one URL per network.
+
+**A client MUST read `version` before validating the rest of a response.** A
+response in a later major version may satisfy this document's schema while
+meaning something else, or fail it over a field that version defines; reporting
+a malformed response in either case tells the person the wrong thing about a
+working endpoint.
+
+Where `version` is not a major version the client implements, the client MUST
+fail with `UNSUPPORTED_VERSION`, MUST NOT render any part of the response as
+something that can be acted on, and MUST NOT `POST`. Rendering the fields it
+happens to recognise, from a response it has admitted it does not understand, is
+precisely the gap between what is shown and what is signed that this protocol
+exists to close.
+
 <!--
 Filled incrementally, one section per issue. Add subsections here rather than
 new top-level headings — CIP-0001 fixes the H2 set.
 
   #16  slips.json domain mapping
   #17  POST request/response and the partial-intent format (Mode A)
-  #18  error-code taxonomy and versioning strategy
   #19  mandatory client-side effects derivation and mismatch rules
   #20  security considerations
+
+Those four insert above 'Failure responses' and 'Protocol versioning', which
+are cross-cutting and read last.
 
 The `//slip` authority registration and its versioned grammar belong here
 too — see docs/DECISIONS/0007-action-authority.md. Shapes freeze at #21.

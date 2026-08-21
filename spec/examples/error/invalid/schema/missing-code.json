@@ -1,0 +1,5 @@
+{
+  "type": "error",
+  "version": "1",
+  "message": "Something went wrong building this transaction. Nothing was signed."
+}

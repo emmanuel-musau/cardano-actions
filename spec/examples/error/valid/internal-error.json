@@ -1,0 +1,6 @@
+{
+  "type": "error",
+  "version": "1",
+  "code": "INTERNAL_ERROR",
+  "message": "Something went wrong building this transaction. Nothing was signed."
+}

@@ -242,23 +242,45 @@ describe("the CIP text and the schema", () => {
     ).toEqual(required.sort())
   })
 
-  it("illustrates the section only with payloads from the corpus", () => {
+  it("illustrates its sections only with payloads from the corpus", () => {
     // An example written inline is an example nothing validates. Every JSON
-    // block in the specification is a file in `spec/examples/get/valid`, so a
-    // shape change breaks the example and the fixture together or not at all.
-    const blocks = [...source.matchAll(/```json\n([\s\S]*?)```/g)].map((match) => JSON.parse(match[1]) as unknown)
+    // block in the specification is a file under `spec/examples/<shape>/valid`,
+    // so a shape change breaks the example and the fixture together or not at
+    // all. The block's own `type` picks which shape it is held to, which is
+    // what lets one check cover a document that grows a section per issue —
+    // a new shape registers here when its section lands.
+    const shapes: Record<string, { readonly schema: string; readonly corpus: string }> = {
+      slip: { schema: "slip-get-response.schema.json", corpus: "get" },
+      error: { schema: "slip-error-response.schema.json", corpus: "error" }
+    }
+
+    const blocks = [...source.matchAll(/```json\n([\s\S]*?)```/g)].map(
+      (match) => JSON.parse(match[1]) as { type?: string }
+    )
     expect(blocks.length).toBeGreaterThanOrEqual(4)
 
-    const corpus = fixtures("valid").map((file) => fixture("valid", file))
     for (const block of blocks) {
+      const printed = `${JSON.stringify(block).slice(0, 80)}…`
+      const shape = shapes[block.type ?? ""]
+      expect(shape, `a JSON example in the CIP declares no shape this test knows: ${printed}`).toBeDefined()
+
+      const shapeAjv = new Ajv2020({ strict: true, strictRequired: false, allErrors: true })
+      const shapeValidate = shapeAjv.compile(
+        JSON.parse(readFileSync(join(root, "spec", "CIP-XXXX", "schemas", shape.schema), "utf8")) as Record<
+          string,
+          unknown
+        >
+      )
       expect(
-        errorsFor(block),
-        `a JSON example in the CIP fails validation: ${ajv.errorsText(validate.errors)}`
-      ).toEqual([])
-      expect(
-        corpus,
-        `a JSON example in the CIP is not in the corpus: ${JSON.stringify(block).slice(0, 80)}…`
-      ).toContainEqual(block)
+        shapeValidate(block),
+        `a JSON example in the CIP fails its own schema: ${shapeAjv.errorsText(shapeValidate.errors)}`
+      ).toBe(true)
+
+      const corpus = join(root, "spec", "examples", shape.corpus, "valid")
+      const held = readdirSync(corpus)
+        .filter((file) => file.endsWith(".json"))
+        .map((file) => readJson(join(corpus, file)))
+      expect(held, `a JSON example in the CIP is not in the corpus: ${printed}`).toContainEqual(block)
     }
   })
 

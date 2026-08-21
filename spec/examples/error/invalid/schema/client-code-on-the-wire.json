@@ -1,0 +1,6 @@
+{
+  "type": "error",
+  "version": "1",
+  "code": "UNREACHABLE",
+  "message": "The endpoint could not be reached."
+}

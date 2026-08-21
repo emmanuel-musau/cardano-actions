@@ -1,0 +1,6 @@
+{
+  "type": "error",
+  "version": "1",
+  "code": "INSUFFICIENT_FUNDS",
+  "message": "Your wallet does not hold enough USDM for this payment."
+}

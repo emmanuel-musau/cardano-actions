@@ -1,0 +1,7 @@
+{
+  "type": "error",
+  "version": "1",
+  "code": "RATE_LIMITED",
+  "message": "Too many requests from this address. Try again in a minute.",
+  "retryAfter": 60
+}

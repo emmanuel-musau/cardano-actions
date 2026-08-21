@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "slip-error-response-endpoint.schema.json",
+  "title": "Slip failure response — what an endpoint may send",
+  "description": "Conformance for a publisher: the failure shape, with `code` narrowed to the eight codes version 1 lets an endpoint send. Codes raised only by a client are absent because nothing usable was received, so there is no body they could arrive in. A client validates against slip-error-response.schema.json instead — the two bind different parties, and the difference is normative.",
+  "allOf": [
+    {
+      "$ref": "slip-error-response.schema.json"
+    },
+    {
+      "type": "object",
+      "properties": {
+        "code": {
+          "$ref": "#/$defs/code"
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "code": {
+      "description": "Every code an endpoint may send in version 1. Client-raised codes are deliberately absent.",
+      "enum": [
+        "INVALID_PARAMETER",
+        "WRONG_NETWORK",
+        "NOT_FOUND",
+        "UNAVAILABLE",
+        "EXPIRED",
+        "RATE_LIMITED",
+        "UPSTREAM_FAILURE",
+        "INTERNAL_ERROR"
+      ]
+    }
+  }
+}

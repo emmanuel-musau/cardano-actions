@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "slip-error-response.schema.json",
+  "title": "Slip failure response",
+  "description": "The failure shape a client MUST be able to read. `code` is constrained to the shape of a code rather than to the version 1 list, because a client that can only parse codes it already knows would discard the publisher's message over a value it could have rendered, and would report a defined condition as an unreadable response. What an endpoint may send is narrowed by slip-error-response-endpoint.schema.json.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["type", "version", "code", "message"],
+  "properties": {
+    "type": {
+      "description": "Discriminates a failure from the shapes GET and POST return on success.",
+      "const": "error"
+    },
+    "version": {
+      "description": "Major version of the Slip protocol this endpoint speaks. Present here so a response a client cannot read still says what it was.",
+      "type": "string",
+      "pattern": "^[1-9][0-9]*$"
+    },
+    "code": {
+      "$ref": "#/$defs/code"
+    },
+    "message": {
+      "description": "Plain text for the person. No markup, no stack traces, no internal identifiers.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 300
+    },
+    "field": {
+      "description": "The name of the parameter at fault, so a client can attach the message to the field that caused it.",
+      "type": "string",
+      "pattern": "^[A-Za-z][A-Za-z0-9_]{0,31}$"
+    }
+  },
+  "allOf": [
+    {
+      "$ref": "#/$defs/fieldNamesTheRejectedParameter"
+    }
+  ],
+  "$defs": {
+    "code": {
+      "description": "The shape of a code. Matches the pattern reason.code uses in discovery, so one rule covers both.",
+      "type": "string",
+      "pattern": "^[A-Z][A-Z0-9_]{2,47}$"
+    },
+    "fieldNamesTheRejectedParameter": {
+      "description": "field explains which submitted value was rejected, so it is meaningless unless a submitted value was.",
+      "if": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "const": "INVALID_PARAMETER"
+          }
+        },
+        "required": ["code"]
+      },
+      "then": true,
+      "else": {
+        "type": "object",
+        "not": {
+          "required": ["field"]
+        }
+      }
+    }
+  }
+}

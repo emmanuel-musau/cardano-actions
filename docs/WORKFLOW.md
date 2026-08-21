@@ -67,7 +67,7 @@ An issue is done when:
 
 ## Decisions
 
-Settled decisions live in `docs/DECISIONS/` as ADRs. Do not relitigate one in a PR — write a new ADR that supersedes it. Three ADRs are already ticketed as spikes because they block other work: error-code taxonomy and spec versioning (#18), CBOR decode approach (#33), CIP-0170 go/no-go (#63).
+Settled decisions live in `docs/DECISIONS/` as ADRs. Do not relitigate one in a PR — write a new ADR that supersedes it. Two ADRs are already ticketed as spikes because they block other work: CBOR decode approach (#33) and CIP-0170 go/no-go (#63).
 
 If a ticket turns out to depend on an unmade decision, stop and make the decision its own small spike issue first. Tickets should never require judgement calls the backlog hasn't already settled.
 
