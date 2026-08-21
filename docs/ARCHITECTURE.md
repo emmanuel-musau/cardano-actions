@@ -53,7 +53,7 @@ Shared vocabulary. Effect Schema definitions for the GET metadata response and t
 |---|---|
 | `types.ts` | `Slip`, `Parameter`, `PartialIntent`, `DerivedEffects` — what a third-party implementer reads first |
 | `url.ts` | Parse, resolve, validate Slip URLs; the human URL → technical endpoint indirection |
-| `actions-json.ts` | Domain mapping rules, so `linktap.example/pay/corner-store` resolves to `/api/slips/pay` |
+| `slips-json.ts` | Domain mapping rules, so `linktap.example/pay/corner-store` resolves to `/api/slips/pay` |
 | `errors.ts` | Typed error taxonomy — every failure mode the UI must render has a code here |
 
 Zero runtime dependencies is the goal.
@@ -63,7 +63,7 @@ Zero runtime dependencies is the goal.
 
 | Module | Owns |
 |---|---|
-| `define-action.ts` | The core helper: `get` + `post` handlers → validated, spec-compliant endpoint with CORS and error handling built in |
+| `define-slip.ts` | The core helper: `get` + `post` handlers → validated, spec-compliant endpoint with CORS and error handling built in |
 | `adapters/nextjs.ts` | Framework binding |
 
 The whole developer-experience promise — a Slip in about twenty lines — is this package's job.
@@ -159,8 +159,8 @@ Each package carries the same four files, mirroring evolution-sdk:
 | File | Role |
 |---|---|
 | `tsconfig.json` | solution file for the package — `include: []`, references `tsconfig.src.json` |
-| `tsconfig.src.json` | the sources: `include: ["src"]`, `rootDir: "src"`, own `tsBuildInfoFile` |
-| `tsconfig.build.json` | extends `tsconfig.src.json`, adds `outDir: "dist"` and `stripInternal` — what `pnpm build` runs |
+| `tsconfig.src.json` | the sources: `include: ["src"]`, `rootDir: "src"`, `outDir: "build/src"`, own `tsBuildInfoFile` |
+| `tsconfig.build.json` | extends `tsconfig.src.json`, adds `outDir: "dist"` and `stripInternal` — what `pnpm build` runs, and the only config that writes `dist` |
 | `tsconfig.test.json` | extends the **root** `tsconfig.test.json`, `include`s the tests, references `tsconfig.src.json` |
 
 ```jsonc
@@ -170,11 +170,15 @@ Each package carries the same four files, mirroring evolution-sdk:
   "include": ["src"],
   "compilerOptions": {
     "rootDir": "src",
-    "outDir": "dist",
+    "outDir": "build/src",
     "tsBuildInfoFile": ".tsbuildinfo/src.tsbuildinfo"
   }
 }
 ```
+
+`tsconfig.src.json` emits to `build/src`, not to `dist`. Both configs have to emit — a composite project cannot typecheck without writing its declarations — and if the typecheck wrote `dist` it would overwrite, without `stripInternal`, the directory turbo has already cached as the `build` output. Two directories, one of them published.
+
+That split is also why a package typechecks in two commands rather than one: `tsc -b tsconfig.src.json && tsc -p tsconfig.test.json`. `tsc -b` refuses to walk a non-composite reference, and the root test config turns `composite` off — so the tests are typechecked with `-p`, resolving `../src/index.js` through the declarations the first command just emitted.
 
 Two consequences worth internalising before the first package is written:
 
