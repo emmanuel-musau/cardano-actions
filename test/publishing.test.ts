@@ -22,12 +22,7 @@ const workspaceRoots = ["packages", "apps", "examples"] as const
  * until that decision lands, and the PR that flips it is the PR that adds it
  * to this list.
  */
-const publishable = [
-  "@cardano-actions/core",
-  "@cardano-actions/server",
-  "@cardano-actions/verifier",
-  "@cardano-actions/flow"
-]
+const publishable = ["@cardano-slips/core", "@cardano-slips/server", "@cardano-slips/verifier", "@cardano-slips/flow"]
 
 type Manifest = {
   name?: string
@@ -102,8 +97,8 @@ describe("every published package", () => {
       if (pkg.manifest.publishConfig?.access !== "public") {
         problems.push('publishConfig.access must be "public"')
       }
-      if (!pkg.manifest.name?.startsWith("@cardano-actions/")) {
-        problems.push("name must be under the @cardano-actions scope")
+      if (!pkg.manifest.name?.startsWith("@cardano-slips/")) {
+        problems.push("name must be under the @cardano-slips scope")
       }
       if (pkg.manifest.license !== "MIT") problems.push("license must be MIT")
       if (pkg.manifest.repository === undefined) problems.push("repository is missing")

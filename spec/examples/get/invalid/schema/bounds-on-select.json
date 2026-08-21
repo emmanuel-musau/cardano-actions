@@ -1,5 +1,5 @@
 {
-  "type": "action",
+  "type": "slip",
   "version": "1",
   "network": "mainnet",
   "icon": "https://fund.linktap.example/i/community-fund.png",
@@ -10,7 +10,7 @@
     "actions": [
       {
         "label": "Contribute 25 {token}",
-        "href": "/api/actions/fund/community?amount=25&token={token}",
+        "href": "/api/slips/fund/community?amount=25&token={token}",
         "parameters": [
           {
             "name": "token",

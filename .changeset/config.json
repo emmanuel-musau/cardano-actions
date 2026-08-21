@@ -1,6 +1,6 @@
 {
   "$schema": "https://unpkg.com/@changesets/config@4.0.0/schema.json",
-  "changelog": ["@changesets/changelog-github", { "repo": "emmanuel-musau/cardano-actions" }],
+  "changelog": ["@changesets/changelog-github", { "repo": "emmanuel-musau/cardano-slips" }],
   "commit": false,
   "access": "public",
   "baseBranch": "main",

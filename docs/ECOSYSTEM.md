@@ -19,7 +19,7 @@ CIP-13 defines the scheme; every extension registers an authority under it. CPS-
 | `//browse` | CIP-158 | Proposed | Open a URL in the wallet's in-app browser |
 | `//drep` | CIP-162 | Proposed | DRep delegation |
 | `//pay` | CIP-157 | Draft, open since 2024-06 | Payment with native assets and metadata |
-| `//action` | *ours* | Unclaimed | An arbitrary intent, built on demand by an endpoint |
+| `//slip` | *ours* | Unclaimed | An arbitrary intent, built on demand by an endpoint |
 
 Nine are registered — CPS-16 lists eight and omits `//connect`. Four of them produce a transaction, and each fixes its shape in the URI with a defined set of query parameters; the rest reference chain data, open a browser, or pair a peer. None returns a transaction a publisher composed. Adding a new kind of action therefore means writing a new CIP and persuading each wallet separately. That is the gap, and it is the whole argument.
 

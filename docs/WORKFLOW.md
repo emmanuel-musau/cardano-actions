@@ -4,7 +4,7 @@ How work moves from the board to `main`. Written for a two-person team at ~4.5 p
 
 ## The board
 
-Issues: `emmanuel-musau/cardano-actions` · Board: https://github.com/users/emmanuel-musau/projects/1
+Issues: `emmanuel-musau/cardano-slips` · Board: https://github.com/users/emmanuel-musau/projects/1
 
 76 issues, numbered in dependency order. Fields: **Status**, **Points**, **Epic**, **Priority**.
 

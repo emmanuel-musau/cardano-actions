@@ -1,5 +1,5 @@
 {
-  "type": "action",
+  "type": "slip",
   "version": "1",
   "network": "mainnet",
   "icon": "https://fund.linktap.example/i/community-fund.png",
@@ -10,7 +10,7 @@
     "actions": [
       {
         "label": "Contribute 25 USDM",
-        "href": "/api/actions/fund/community?amount=25&token=usdm",
+        "href": "/api/slips/fund/community?amount=25&token=usdm",
         "parameters": [{ "name": "amount", "label": "Amount", "type": "number", "min": 1, "max": 500 }]
       }
     ]

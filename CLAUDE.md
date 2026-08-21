@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Cardano Actions — an open specification + TypeScript SDK that turns a shareable URL into a signable Cardano transaction. Solana Actions/Blinks rebuilt natively for Cardano, with one structural advantage: on a deterministic ledger the client **derives** exact transaction effects from the tx body instead of simulating them. If derived effects contradict the endpoint's declared metadata, the client blocks signing. No registry, no custody, no relayer.
+Cardano Slips — an open specification + TypeScript SDK that turns a shareable URL into a signable Cardano transaction. Solana Actions/Blinks rebuilt natively for Cardano, with one structural advantage: on a deterministic ledger the client **derives** exact transaction effects from the tx body instead of simulating them. If derived effects contradict the endpoint's declared metadata, the client blocks signing. No registry, no custody, no relayer.
 
 ## Attribution — non-negotiable
 
@@ -24,7 +24,7 @@ Never mention Claude, Anthropic, or any AI tool anywhere in this repository's ou
 
 There is exactly one design sheet for the whole client UI, and it is the reference for any work that renders something a user sees:
 
-**Cardano Actions** — https://claude.ai/design/p/79057abf-f6fc-410c-9d7c-f8490d1088ea?file=Cardano+Actions.dc.html
+**Cardano Slips** — https://claude.ai/design/p/79057abf-f6fc-410c-9d7c-f8490d1088ea?file=Cardano+Actions.dc.html
 
 The sheet has two columns. The left column is the component system: `1 · Tokens` (colour, type, spacing, radius, the dark-surface rule, and a WCAG AA contrast audit), `2 · Action card` (states a–g), `3 · Transaction preview · anatomy`, `4 · Entering the dark`, `5 · Transaction preview · states` (a–h, including the mismatch block). The right column is the hosted interstitial — the M1 client itself: `6 · Hosted page · anatomy`, `7 · Page states` (a–h), `8 · Wallet connect`, `9 · In-wallet browser`, `10 · Chrome rules`, and `11 · Still to design`.
 
@@ -49,7 +49,7 @@ pnpm typecheck        # tsc --noEmit
 
 ## Working rules
 
-- Work is driven by GitHub issues (`emmanuel-musau/cardano-actions`), ordered by dependency; respect `Depends on #N` lines. One issue = one branch = one PR. Board: https://github.com/users/emmanuel-musau/projects/1
+- Work is driven by GitHub issues (`emmanuel-musau/cardano-slips`), ordered by dependency; respect `Depends on #N` lines. One issue = one branch = one PR. Board: https://github.com/users/emmanuel-musau/projects/1
 - Do not start an issue whose dependencies are open. Do not expand an issue's scope — file a new issue instead.
 - Branch names are `<type>/<purpose>`: the type prefix, a slash, then the purpose in kebab-case — `chore/pnpm-workspace`, `feat/ada-delta`, `fix/mismatch-block`. No issue numbers, no other punctuation. Types: `feat`, `fix`, `chore`, `docs`, `test`, `spec`, `infra`. The purpose is one or two words naming the thing, not the sentence; the issue link lives in the commit trailer and the PR.
 - Every change ships with tests in the same PR. See **Testing** below — this is not a soft preference.
@@ -70,9 +70,9 @@ What "tested" means per package:
 
 | Package | The bar |
 |---|---|
-| `core` | Every schema validated against both valid and malformed payloads. Every URL / `actions.json` resolution rule has a case, including the ones that must be rejected. Every error code is reachable in a test. |
+| `core` | Every schema validated against both valid and malformed payloads. Every URL / `slips.json` resolution rule has a case, including the ones that must be rejected. Every error code is reachable in a test. |
 | `verifier` | The highest bar in the repo. Property-style coverage of derivation arithmetic, `test/fixtures/` for known-good regressions, and `test/adversarial/` for transactions whose declared metadata lies. **Every adversarial case must be blocked, and the corpus grows with every bug** — any transaction that should have been blocked and wasn't becomes a permanent test case. |
-| `server` | `defineAction` output validated against `core` schemas; CORS, HTTP status mapping, and each spec error code exercised. |
+| `server` | `defineSlip` output validated against `core` schemas; CORS, HTTP status mapping, and each spec error code exercised. |
 | `identity` | Attestation issue/resolve round-trip, plus explicit tests for invalid, expired, and absent attestations — an unverified publisher must render as unverified, never as verified. |
 | `flow` | Component tests for the effects panel and the mismatch block, wallet flow tested against a stubbed CIP-30 provider, and the rebuild-and-retry path covered. |
 | apps / examples | The critical user path end-to-end. Not every pixel — the flow that must not break. |
@@ -82,7 +82,7 @@ The **hard invariants below each need a test that fails if the invariant is brok
 ## Hard invariants (violating these is a bug, whatever the ticket says)
 
 1. `packages/verifier` stays a pure function of (tx CBOR, declared metadata, user addresses). It must not import from `flow`, `server`, or any network layer.
-2. The client never sends the user's UTxO set to an action endpoint (Mode A only in v1).
+2. The client never sends the user's UTxO set to a Slip endpoint (Mode A only in v1).
 3. A metadata/effects mismatch always hard-blocks signing. No override paths, no allowlists.
 4. `signTx` returns a witness set, not a signed tx — witnesses are assembled into the body before `submitTx`.
 5. Nothing in this codebase ever holds, custodies, or relays user funds.

@@ -1,22 +1,22 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "Action discovery response",
-  "description": "The body a Cardano Action endpoint returns from GET. Normative for version 1.",
+  "title": "Slip discovery response",
+  "description": "The body a Slip endpoint returns from GET. Normative for version 1.",
   "type": "object",
   "additionalProperties": false,
   "required": ["type", "version", "title", "description", "icon", "label", "network"],
   "properties": {
     "type": {
       "description": "Discriminates a discovery response from the partial intent POST returns.",
-      "const": "action"
+      "const": "slip"
     },
     "version": {
-      "description": "Major version of the Action protocol this response speaks.",
+      "description": "Major version of the Slip protocol this response speaks.",
       "type": "string",
       "pattern": "^[1-9][0-9]*$"
     },
     "title": {
-      "description": "What the action does, as a person would say it.",
+      "description": "What the Slip does, as a person would say it.",
       "type": "string",
       "minLength": 1,
       "maxLength": 120

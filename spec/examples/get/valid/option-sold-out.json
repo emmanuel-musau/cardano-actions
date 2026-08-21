@@ -1,5 +1,5 @@
 {
-  "type": "action",
+  "type": "slip",
   "version": "1",
   "network": "preprod",
   "icon": "https://linktap.example/i/builders-workshop.png",
@@ -8,10 +8,10 @@
   "label": "Reserve a seat",
   "links": {
     "actions": [
-      { "label": "General seat — 25 USDM", "href": "/api/actions/workshop/reserve?tier=general" },
+      { "label": "General seat — 25 USDM", "href": "/api/slips/workshop/reserve?tier=general" },
       {
         "label": "Front row — 75 USDM",
-        "href": "/api/actions/workshop/reserve?tier=front",
+        "href": "/api/slips/workshop/reserve?tier=front",
         "disabled": true,
         "reason": { "message": "Front row is sold out. General seats are still available." }
       }

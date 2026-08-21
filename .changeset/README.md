@@ -14,7 +14,7 @@ Add one with `pnpm changeset`. Full docs:
 choices are explained here.
 
 **`access: "public"`.** Scoped packages default to `restricted` — npm's paid,
-access-controlled product. Publishing `@cardano-actions/core` without this
+access-controlled product. Publishing `@cardano-slips/core` without this
 fails with a 402 rather than doing what we meant. Nothing here is worth hiding:
 a security model that asks you to verify the derivation yourself cannot ship a
 package nobody can read.

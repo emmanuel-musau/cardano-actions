@@ -1,8 +1,8 @@
-# Cardano Actions
+# Cardano Slips
 
 Turn any URL into a signable Cardano transaction. Share a link on X, WhatsApp, or a printed QR code — the recipient reviews exactly what they're signing and confirms in their own wallet. Open spec + TypeScript SDK.
 
-> Developed in the open — the specification, the SDK, and the reasoning behind both. Track what is moving in [issues](https://github.com/emmanuel-musau/cardano-actions/issues).
+> Developed in the open — the specification, the SDK, and the reasoning behind both. Track what is moving in [issues](https://github.com/emmanuel-musau/cardano-slips/issues).
 
 ## Why it's different
 
@@ -12,8 +12,8 @@ That is why this needs no gatekeeping registry: the server's metadata is a claim
 
 ## How it works
 
-1. A dApp hosts an **Action** endpoint. `GET` describes the intent (title, icon, parameters); `POST` returns a *partial* transaction covering only the dApp's side.
-2. Anyone shares the **link**. `actions.json` lets a human URL front a technical endpoint.
+1. A dApp hosts a **Slip** endpoint. `GET` describes the intent (title, icon, parameters); `POST` returns a *partial* transaction covering only the dApp's side.
+2. Anyone shares the **link**. `slips.json` lets a human URL front a technical endpoint.
 3. A **client** — the interstitial page, a wallet, a bot — resolves the link, balances the transaction locally against the user's own UTxOs (the endpoint never sees them), derives the exact effects, shows them, and hands off to the wallet over CIP-30.
 
 Holds no user funds. No custody, no relayer, no treasury validator. The blast radius of a bug is a failed transaction, not a drained wallet.
@@ -22,12 +22,12 @@ Holds no user funds. No custody, no relayer, no treasury validator. The blast ra
 
 | Package | What it does |
 |---|---|
-| `@cardano-actions/core` | the shared contract — schemas, URL rules, error codes |
-| `@cardano-actions/server` | publish an action endpoint — `defineAction()` + Next.js adapter |
-| `@cardano-actions/verifier` | derive what the transaction really does, and block signing if the metadata lies |
-| `@cardano-actions/flow` | run the user through it — action UI + CIP-30 wallet orchestration |
+| `@cardano-slips/core` | the shared contract — schemas, URL rules, error codes |
+| `@cardano-slips/server` | publish a Slip endpoint — `defineSlip()` + Next.js adapter |
+| `@cardano-slips/verifier` | derive what the transaction really does, and block signing if the metadata lies |
+| `@cardano-slips/flow` | run the user through it — Slip UI + CIP-30 wallet orchestration |
 
-Plus `apps/interstitial` (hosted, self-hostable fallback page) and `examples/adalink` (reference integration: USDM/USDCx payment actions).
+Plus `apps/interstitial` (hosted, self-hostable fallback page) and `examples/adalink` (reference integration: USDM/USDCx payment Slips).
 
 ## Documentation
 

@@ -2,9 +2,9 @@
 
 Terms used throughout the spec, issues, and code. Cardano-specific meanings, not general definitions.
 
-**Action** — an HTTP endpoint hosted by a dApp. `GET` describes an intent; `POST` returns a partial transaction. A server, not a library.
+**Slip** — an HTTP endpoint hosted by a dApp. `GET` describes an intent; `POST` returns a partial transaction. A server, not a library.
 
-**actions.json** — a CORS-enabled file at a domain root mapping human URLs to technical endpoints (`/delegate/**` → `/api/actions/delegate/**`), so a shared link stays readable.
+**slips.json** — a CORS-enabled file at a domain root mapping human URLs to technical endpoints (`/delegate/**` → `/api/slips/delegate/**`), so a shared link stays readable.
 
 **Adversarial corpus** — transactions whose declared metadata contradicts their real effects, with evidence that 100% are blocked before signature. The artefact that proves the security claim is real rather than asserted.
 
@@ -16,13 +16,13 @@ Terms used throughout the spec, issues, and code. Cardano-specific meanings, not
 
 **Change address** — where a transaction's leftover value returns. Supplied by the wallet via CIP-30 and sent to the endpoint in the POST body.
 
-**CIP-13** — Cardano's URI scheme (`web+cardano:`). Currently covers payment and stake delegation. Our proposed `//action` authority extends it; deferred to roadmap in M1.
+**CIP-13** — Cardano's URI scheme (`web+cardano:`). Currently covers payment and stake delegation. Our proposed `//slip` authority extends it; deferred to roadmap in M1.
 
 **CIP-30** — the browser wallet connector. Note the detail that trips people up: `signTx` returns a **witness set**, not a signed transaction. Witnesses must be assembled into the body before `submitTx`.
 
 **CIP-0170** — KERI-backed on-chain attestations, anchoring a digest of arbitrary data in an issuer's Key Event Log and referencing it in transaction metadata. Tier 2 of the identity layer: it carries a publisher to a legally recognised entity, but defines no domain binding of its own — see **Publisher manifest**.
 
-**Collateral** — UTxOs pledged to cover fees if a script fails validation. Relevant to Mode B and script-heavy actions; out of M1 scope.
+**Collateral** — UTxOs pledged to cover fees if a script fails validation. Relevant to Mode B and script-heavy Slips; out of M1 scope.
 
 **Deposit** — refundable ADA locked by certain certificates, notably stake key registration (2 ADA). Shown separately from fees in the effects panel because the user gets it back.
 
@@ -46,7 +46,7 @@ Terms used throughout the spec, issues, and code. Cardano-specific meanings, not
 
 **Preprod** — the Cardano test network used for all end-to-end work before mainnet.
 
-**Publisher manifest** — the signed `.well-known/cardano-actions.json` document binding a domain to the action endpoints it vouches for. Tier 1 of the identity layer, and the payload a CIP-0170 attestation anchors. Proves *who* is asking, where effects derivation proves *what* happens.
+**Publisher manifest** — the signed `.well-known/cardano-slips.json` document binding a domain to the Slip endpoints it vouches for. Tier 1 of the identity layer, and the payload a CIP-0170 attestation anchors. Proves *who* is asking, where effects derivation proves *what* happens.
 
 **Reference integration** — AdaLink. Proves the SDK on a product with real users; not a library and not a template.
 
