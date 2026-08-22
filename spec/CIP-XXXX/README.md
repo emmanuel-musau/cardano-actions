@@ -35,7 +35,7 @@ a simulation of it. A client can therefore establish what a transaction does
 without trusting its publisher, and no registry of approved publishers is
 required.
 
-This proposal also registers the `//slip` authority under [CIP-13], defines an
+This proposal also registers the `//slip` authority under [CIP-13], defines a
 `slips.json` mapping from human-readable paths to endpoints, and specifies the
 unavailable and failure states a client must render.
 
@@ -533,6 +533,16 @@ are cross-cutting and read last.
 
 The `//slip` authority registration and its versioned grammar belong here
 too — see docs/DECISIONS/0007-action-authority.md. Shapes freeze at #21.
+
+Two rules the ecosystem has already paid for (docs/ECOSYSTEM.md §1):
+
+  - Quantities are integer base units, never decimals-adjusted, typed as
+    strings. Display decimals travel separately and are never authoritative.
+    Mishandled decimals on `amount` is the most repeated bug in the
+    web+cardano family. Applies to #17 and to the mismatch rules in #19.
+  - The authority follows CIP-158's shipped shape —
+    `web+cardano://browse/v1?uri=...`: fixed authority token, /v1 path
+    segment, query payload. Never a variable directly after `//`.
 -->
 
 ## Rationale: How does this CIP achieve its goals?
@@ -549,7 +559,14 @@ and how it answers CPS-16. Unresolved questions belong here as an
 
 ### Acceptance Criteria
 
-<!-- Written at #21. -->
+<!--
+Written at #21, under one hard constraint: no criterion may require a wallet
+to implement a URI authority. That criterion is what has held CIP-13 at
+Proposed since 2020 and CIP-157 open since 2024 (docs/ECOSYSTEM.md §1). M1
+runs on ordinary https:// links and CIP-30, so these criteria are met by
+publishers, our own client and the reference integration. CIP-99 is the
+template: reference server, real use case, wallet co-author.
+-->
 
 ### Implementation Plan
 

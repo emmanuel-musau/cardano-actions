@@ -1,6 +1,6 @@
 # Ecosystem
 
-The Cardano standards this project sits among: what each one does, what we take from it, and what we leave alone. Surveyed 2026-08-20 against `cardano-foundation/CIPs`.
+The Cardano standards this project sits among: what each one does, what we take from it, and what we leave alone. Surveyed 2026-08-20 against `cardano-foundation/CIPs`, refreshed 2026-08-22 against [issue #836](https://github.com/cardano-foundation/CIPs/issues/836) — the ecosystem's running meta-issue on the URI scheme, and the source for most of §1.
 
 Read this before writing spec text or arguing that something doesn't exist. Most of what looks like a gap turns out to be something already built for a neighbouring purpose, and saying so first is cheaper than being corrected in public.
 
@@ -16,14 +16,39 @@ CIP-13 defines the scheme; every extension registers an authority under it. CPS-
 | `//transaction`, `//block` | CIP-107 | Proposed | Historical reference |
 | `//addr` | CIP-134 | Proposed | Address reference |
 | `//connect` | CIP-45 | Active | WebRTC peer pairing |
-| `//browse` | CIP-158 | Proposed | Open a URL in the wallet's in-app browser |
+| `//browse` | CIP-158 | **Active** | Open a URL in the wallet's in-app browser. Implementors: VESPR, Begin |
 | `//drep` | CIP-162 | Proposed | DRep delegation |
-| `//pay` | CIP-157 | Draft, open since 2024-06 | Payment with native assets and metadata |
+| `//pay` | CIP-157 | Draft — PR 843, unmerged since 2024-06 | Payment with native assets and metadata |
 | `//slip` | *ours* | Unclaimed | An arbitrary intent, built on demand by an endpoint |
 
 Nine are registered — CPS-16 lists eight and omits `//connect`. Four of them produce a transaction, and each fixes its shape in the URI with a defined set of query parameters; the rest reference chain data, open a browser, or pair a peer. None returns a transaction a publisher composed. Adding a new kind of action therefore means writing a new CIP and persuading each wallet separately. That is the gap, and it is the whole argument.
 
 **The registry is not authoritative.** CPS-16's list omits `//connect`, which CIP-45 has used since 2023. Grep the repo before claiming a name is free.
+
+### Grammar and unit rules, learned the hard way
+
+Every rule below was paid for by a bug that shipped. Sources: issue #836 and the CIP-157 review thread (PR 843).
+
+- **Never put a variable directly after `//`.** What follows `//` is the URI *authority* and must be a fixed token. Yoroi shipped `web+cardano:<addr>`, VESPR shipped `web+cardano://<addr>`; the second violates RFC 3986 and breaks standard parsers. Consensus, January 2026: the legacy authority-less form stays for the original payment shape, everything new uses `//<authority>`.
+- **Version in the path from the first release.** CIP-158 ships `web+cardano://browse/v1?uri=<percent-encoded>` — fixed authority token, `/v1` segment, query payload. That is the shape `//slip` follows (ADR-0007), which makes our registration a conformance argument rather than a proposal.
+- **Percent-encode anything carried as a value.** `|` is not URI-safe and had to be pulled from CIP-157's asset syntax; the usable sub-delims are `- . _ ~ ! $ ( ) * + ;`.
+- **Quantities are integer base units, never decimals-adjusted.** Mishandled decimals on `amount` is the most repeated bug in the whole family — it shipped in Eternl and Begin — and VESPR asked CIP-157 to state it normatively. Display decimals travel separately and are never authoritative. Spec input on #17, adversarial case on #41.
+- **Identify assets as `<policy_id>.<asset_name>`, not by fingerprint.** Fingerprints are fixed-length and would give predictable URI lengths, but neither Blockfrost nor Koios can query by them. Short tickers are worse: they collide with each other and with query keywords — a token named `MSG` breaks `&msg=`.
+
+### Why this layer stalls
+
+The URI family's problem is adoption, not design. Wallet teams largely do not engage with the CIP process; each ships its own shape first, and editors have spent two years asking for a working group that has not convened. The record:
+
+| When | What |
+|---|---|
+| 2020 → now | CIP-13 is still `Status: Proposed`, `Implementors: N/A` |
+| 2024-06 → now | CIP-157 `//pay` open as PR 843, stalled on how to name an asset in a URI; VESPR de-prioritised it |
+| 2025-12 | "I can not find a single mobile wallet that has implemented CIP13 payment links correctly" |
+| 2026-02 | Yoroi found shipping the pre-merge, faulty form of CIP-158 |
+| 2026-05 | PR 842 `//authentication` closed by editors after two years without a specification |
+| 2026-07 | The scheme's advocate leaves Cardano; the wallet-support tracker goes unmaintained |
+
+Two things follow, and both are already decisions rather than observations. **M1 must not need a wallet to change** — desktop web, CIP-30 and ordinary `https://` links ask nothing of any URI handler, which is why ADR-0007 keeps `//slip` on the roadmap. And **our Path to Active must not name wallet adoption of an authority as a criterion** (#21), because that is precisely the criterion that has held CIP-13 for six years. Where we do use an authority — `//browse` for mobile entry — it gets verified per wallet rather than assumed (#98).
 
 ## 2. CIP-99 — the precedent that matters most
 
@@ -74,10 +99,13 @@ The open problem statement CIP-186 answers: CIP-30 is a JavaScript injection con
 
 The URI space is small and the same names recur. Engage before submitting, not after.
 
-- **rphair** — CIP editor, the ecosystem's most persistent URI advocate. Puts URI items on the biweekly editors' agenda (`hackmd.io/@cip-editors`).
+- **rphair** — CIP editor, the ecosystem's most persistent URI advocate. Puts URI items on the biweekly editors' agenda (`hackmd.io/@cip-editors`), and has said publicly he will stay on issue #836 for as long as he is in Cardano.
 - **Adam Dean (Crypto2099)** — author of CIP-13's extensions, CIP-99, CIP-157, CIP-158, and CPS-16. Asked publicly at Buidler Fest for help with QR codes carrying a whole contract.
 - **Alex Dochioiu** — VESPR; co-author of CIP-99, and the one who de-prioritised CIP-157.
 - **realdecimalist** — CIP-186.
 - **marcuspuchalla** — Eternl; built the first CIP-186 implementation and reviewed the spec against it.
+- **Mad Orkestra** — opened issue #836 and authored CIP-162 `//drep`; built the wallet-support tracker. Stopped working on Cardano in July 2026.
 
-The CIP-13 wallet support tracker at `cip13.cardanothings.io` is useful but unmaintained since its author left Cardano in July 2026.
+On 2026-02-18 editors resolved to find a co-author advocate for the stalled URI CIPs and to assemble a GitHub tag list of wallet representatives; the person they asked has since left. That list, once it exists, is the shortest route to the wallet co-author §2 says this CIP still needs.
+
+The CIP-13 wallet support tracker at `cip13.cardanothings.io` is useful but unmaintained: a single-page SvelteKit site, last modified 2026-05-19, whose author left Cardano in July 2026. Do not cite it as live evidence of what a wallet supports today — test the wallet.
