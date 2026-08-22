@@ -251,7 +251,8 @@ describe("the CIP text and the schema", () => {
     // a new shape registers here when its section lands.
     const shapes: Record<string, { readonly schema: string; readonly corpus: string }> = {
       slip: { schema: "slip-get-response.schema.json", corpus: "get" },
-      error: { schema: "slip-error-response.schema.json", corpus: "error" }
+      error: { schema: "slip-error-response.schema.json", corpus: "error" },
+      partial: { schema: "slip-partial-intent.schema.json", corpus: "partial" }
     }
 
     const blocks = [...source.matchAll(/```json\n([\s\S]*?)```/g)].map(

@@ -1,0 +1,14 @@
+{
+  "type": "partial",
+  "version": "1",
+  "intent": {
+    "outputs": [
+      {
+        "address": "addr1qxettqndzx5pmwkaxydp0lpaffxsnfgkgwx6afzn43w9wd7pzq7lsck6w56xu7yz5tsypql5gpcw20s5csf9jlr7mkjsq9l5us",
+        "lovelace": "12000000"
+      }
+    ],
+    "validUntil": "2020-01-01T00:00:00Z"
+  },
+  "message": "One payment to the shop's address."
+}

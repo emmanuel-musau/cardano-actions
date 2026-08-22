@@ -1,0 +1,10 @@
+{
+  "type": "slip",
+  "version": "1",
+  "network": "mainnet",
+  "build": "server",
+  "icon": "https://dex.linktap.example/i/swap.png",
+  "title": "Swap 50 ADA for USDM",
+  "description": "A swap against the pool's script. The transaction is built by the exchange, which needs to see your unspent outputs.",
+  "label": "Swap 50 ADA"
+}

@@ -1,0 +1,225 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "slip-partial-intent.schema.json",
+  "title": "Slip partial intent",
+  "description": "The body a Slip endpoint returns from POST: the publisher's side of a transaction, and nothing the ledger or the wallet determines. The client balances it against its own unspent outputs, and every quantity here is compared in base units against effects derived from the transaction that results. Normative for version 1.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["type", "version", "intent"],
+  "properties": {
+    "type": {
+      "description": "Discriminates a partial intent from discovery metadata and from a failure.",
+      "const": "partial"
+    },
+    "version": {
+      "description": "Major version of the Slip protocol this response speaks.",
+      "type": "string",
+      "pattern": "^[1-9][0-9]*$"
+    },
+    "intent": {
+      "$ref": "#/$defs/intent"
+    },
+    "message": {
+      "description": "Plain text shown alongside the derived effects. Never in place of them.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 300
+    }
+  },
+  "$defs": {
+    "intent": {
+      "description": "What the publisher asks the transaction to do. An intent that does none of the three things below asks a person to pay a fee for nothing.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["validUntil"],
+      "properties": {
+        "outputs": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 16,
+          "items": {
+            "$ref": "#/$defs/output"
+          }
+        },
+        "certificates": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 8,
+          "items": {
+            "$ref": "#/$defs/certificate"
+          }
+        },
+        "withdrawRewards": {
+          "description": "Withdraw the whole balance of the wallet's own reward account. No amount: only the client can know it.",
+          "type": "boolean"
+        },
+        "validUntil": {
+          "$ref": "#/$defs/instant"
+        }
+      },
+      "anyOf": [
+        {
+          "required": ["outputs"]
+        },
+        {
+          "required": ["certificates"]
+        },
+        {
+          "required": ["withdrawRewards"]
+        }
+      ]
+    },
+    "output": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["address", "lovelace"],
+      "properties": {
+        "address": {
+          "$ref": "#/$defs/paymentAddress"
+        },
+        "lovelace": {
+          "description": "A floor, in lovelace. Where it is under the protocol minimum the client raises it and shows the difference as an effect of its own.",
+          "$ref": "#/$defs/quantity"
+        },
+        "assets": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 16,
+          "items": {
+            "$ref": "#/$defs/asset"
+          }
+        }
+      }
+    },
+    "asset": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["policyId", "assetName", "quantity"],
+      "properties": {
+        "policyId": {
+          "description": "Minting policy id, 28 bytes as lowercase hex.",
+          "type": "string",
+          "pattern": "^[0-9a-f]{56}$"
+        },
+        "assetName": {
+          "description": "Asset name as lowercase hex, up to 32 bytes. Empty is a policy's unnamed asset. Never a ticker: a ticker is a display of an on-chain name, not the name.",
+          "type": "string",
+          "pattern": "^([0-9a-f]{2}){0,32}$"
+        },
+        "quantity": {
+          "$ref": "#/$defs/positiveQuantity"
+        }
+      }
+    },
+    "certificate": {
+      "description": "One certificate the transaction carries. It acts on the wallet's own stake credential, which the client supplies, and its deposit or refund is a protocol parameter neither party states.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "enum": ["stakeRegistration", "stakeDeregistration", "stakeDelegation", "voteDelegation"]
+        },
+        "poolId": {
+          "description": "Bech32 pool id. Required by stakeDelegation and permitted nowhere else.",
+          "type": "string",
+          "pattern": "^pool1[qpzry9x8gf2tvdw0s3jn54khce6mua7l]{45,60}$"
+        },
+        "drep": {
+          "description": "Bech32 DRep id per CIP-129, or one of the two predefined votes. Required by voteDelegation and permitted nowhere else.",
+          "oneOf": [
+            {
+              "type": "string",
+              "pattern": "^drep1[qpzry9x8gf2tvdw0s3jn54khce6mua7l]{45,90}$"
+            },
+            {
+              "enum": ["abstain", "noConfidence"]
+            }
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "stakeDelegation"
+              }
+            },
+            "required": ["type"]
+          },
+          "then": {
+            "type": "object",
+            "required": ["poolId"],
+            "not": {
+              "required": ["drep"]
+            }
+          }
+        },
+        {
+          "if": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "voteDelegation"
+              }
+            },
+            "required": ["type"]
+          },
+          "then": {
+            "type": "object",
+            "required": ["drep"],
+            "not": {
+              "required": ["poolId"]
+            }
+          }
+        },
+        {
+          "if": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "enum": ["stakeRegistration", "stakeDeregistration"]
+              }
+            },
+            "required": ["type"]
+          },
+          "then": {
+            "type": "object",
+            "not": {
+              "anyOf": [
+                {
+                  "required": ["poolId"]
+                },
+                {
+                  "required": ["drep"]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "quantity": {
+      "description": "Integer base units, in decimal, as a string. Never decimals-adjusted, never a JSON number.",
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]{0,19})$"
+    },
+    "positiveQuantity": {
+      "description": "A quantity of at least one. A zero of a native asset is the absence of it.",
+      "type": "string",
+      "pattern": "^[1-9][0-9]{0,19}$"
+    },
+    "paymentAddress": {
+      "description": "Bech32 payment address per CIP-19, on the network the Slip declared.",
+      "type": "string",
+      "pattern": "^addr(_test)?1[qpzry9x8gf2tvdw0s3jn54khce6mua7l]{45,110}$"
+    },
+    "instant": {
+      "description": "RFC 3339 instant in UTC, to the second. No offsets and no fractions: a deadline is compared, not displayed, and one written two ways is two deadlines.",
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+    }
+  }
+}

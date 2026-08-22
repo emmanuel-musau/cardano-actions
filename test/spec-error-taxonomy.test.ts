@@ -11,7 +11,7 @@ import { describe, expect, it } from "vitest"
  *
  * Two things are being pinned here, and they are the same thing seen twice.
  *
- * The taxonomy is a closed vocabulary: eleven codes, each in exactly one of
+ * The taxonomy is a closed vocabulary: fifteen codes, each in exactly one of
  * three classes, and the class — not the wording — is what a client acts on.
  * That only holds if the prose table, the JSON Schema and the example corpus
  * agree about which codes exist, who may send them, and what status carries

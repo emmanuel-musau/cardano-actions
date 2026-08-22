@@ -1,0 +1,14 @@
+{
+  "type": "partial",
+  "version": "1",
+  "intent": {
+    "certificates": [
+      {
+        "type": "stakeDelegation",
+        "poolId": "pool1ayfz9ymjutjzx0a33q8tq6zrn8lj3ckmzp69c9vxk8kyxylly5y"
+      }
+    ],
+    "validUntil": "2026-08-22T19:40:00Z"
+  },
+  "message": "Delegate to the Community Stake Pool. Your ADA never leaves your wallet."
+}

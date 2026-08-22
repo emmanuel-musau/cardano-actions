@@ -39,6 +39,9 @@
     "network": {
       "$ref": "#/$defs/network"
     },
+    "build": {
+      "$ref": "#/$defs/buildMode"
+    },
     "links": {
       "type": "object",
       "additionalProperties": false,
@@ -71,6 +74,10 @@
     "network": {
       "description": "Named rather than numeric: CIP-30's network id cannot separate preprod from preview.",
       "enum": ["mainnet", "preprod", "preview"]
+    },
+    "buildMode": {
+      "description": "Who balances the transaction. Absent means local. Version 1 implements local only, and reserves server so that a later version costs a publisher a field rather than a major.",
+      "enum": ["local", "server"]
     },
     "iconUrl": {
       "description": "Absolute https URL of a square image. No data: URIs \u2014 a link unfurler has to fetch it too.",

@@ -1,0 +1,13 @@
+{
+  "type": "partial",
+  "version": "1",
+  "intent": {
+    "certificates": [
+      {
+        "type": "stakeRegistration",
+        "deposit": "2000000"
+      }
+    ],
+    "validUntil": "2026-08-22T19:40:00Z"
+  }
+}
