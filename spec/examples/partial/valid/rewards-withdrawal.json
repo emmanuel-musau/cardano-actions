@@ -1,0 +1,15 @@
+{
+  "type": "partial",
+  "version": "1",
+  "intent": {
+    "withdrawRewards": true,
+    "outputs": [
+      {
+        "address": "addr1qxcd9f33uzmeftka0df9mqqngnv7n5pysjpz4x4rkc30vgje9ckxtcvv6fygn4lutdqf56khahq80sujcrn0rhn3mg3sj0pnxm",
+        "lovelace": "5000000"
+      }
+    ],
+    "validUntil": "2026-08-22T19:40:00Z"
+  },
+  "message": "Withdraw your staking rewards and contribute 5 ADA of them to the fund."
+}

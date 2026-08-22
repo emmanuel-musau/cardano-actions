@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "slip-post-request.schema.json",
+  "title": "Slip build request",
+  "description": "The body a client sends with POST. Two fields, and the closed object is the point: in Mode A an endpoint learns one address the client chose and the network it is on, and nothing else about the person. Normative for version 1.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["changeAddress", "network"],
+  "properties": {
+    "changeAddress": {
+      "$ref": "#/$defs/paymentAddress"
+    },
+    "network": {
+      "$ref": "#/$defs/network"
+    }
+  },
+  "$defs": {
+    "network": {
+      "description": "Named rather than numeric: CIP-30's network id cannot separate preprod from preview.",
+      "enum": ["mainnet", "preprod", "preview"]
+    },
+    "paymentAddress": {
+      "description": "Bech32 payment address per CIP-19. A reward address is not one, and neither is anything else the wallet can produce.",
+      "type": "string",
+      "pattern": "^addr(_test)?1[qpzry9x8gf2tvdw0s3jn54khce6mua7l]{45,110}$"
+    }
+  }
+}

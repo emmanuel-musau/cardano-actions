@@ -25,9 +25,11 @@ Returns: `type`, `version`, `title`, `description`, `icon`, `label`, `network`, 
 Served from the domain root, CORS-enabled: `rules[]` of `pathPattern` → `apiPath` with `*`/`**` wildcards. Lets `linktap.example/delegate/POOL1` resolve to the real endpoint while the shared link stays human.
 
 ### POST — build (Mode A, client-side balancing — the v1 default and only mode)
-Request: `{ changeAddress, network }`. Response: `{ type: "partial", intent: { outputs, certificates, requiredSigners, validUntil }, message }`. The client balances locally with evolution-sdk against the user's own UTxOs. **The endpoint never sees the user's UTxO set.**
+Request: `{ changeAddress, network }`. Response: `{ type: "partial", intent: { outputs, certificates, withdrawRewards, validUntil }, message }`. The client balances locally with evolution-sdk against the user's own UTxOs. **The endpoint never sees the user's UTxO set.**
 
-Mode B (server-side balancing, client ships UTxOs) is specified as reserved/declared-in-GET but **out of scope for M1** — servers must declare it, clients must warn.
+Every quantity is an **integer count of base units as a string** — lovelace for ADA, raw on-chain quantity for a native asset — and no field carries decimals. The endpoint declares only what it chooses: the fee, certificate deposits, the stake credential, the reward balance and every key hash are supplied by the client, so there is no field in which an endpoint can state one wrongly. Declared lovelace is a *floor*: where it is under the ledger minimum the client raises it and shows the difference as its own effect.
+
+Mode B (server-side balancing, client ships UTxOs) is reserved as `build: "server"` in the GET response but **out of scope for M1** — a v1 client renders the card, refuses to POST, and fails `UNSUPPORTED_BUILD_MODE`.
 
 ### Sign and submit
 Client ends with a complete unsigned tx: derive effects → show → CIP-30 `signTx` (returns a **witness set**) → assemble witnesses into the body → `submitTx`. Short validity intervals plus automatic rebuild-and-retry when UTxOs move between build and sign.

@@ -154,6 +154,7 @@ The response body is a single JSON object.
 | `icon` | yes | string | Absolute `https:` URL of a square image. `data:` URIs MUST NOT be used — the same image is fetched by link unfurlers that never execute the publisher's code. |
 | `label` | yes | string | The Slip's call to action, 1–48 characters. Labels the single button when `links` is absent; where `links` is present a client MUST render the linked actions and use `label` only where one string is all that fits, such as a link preview. |
 | `network` | yes | string | One of `mainnet`, `preprod`, `preview`. A client MUST NOT `POST` while the connected wallet is on a different network. |
+| `build` | no | string | Who balances the transaction: `local` or `server`. Absent means `local`, which is the only mode version 1 implements. See [Build modes](#build-modes). |
 | `links` | no | object | Carries `actions`, an array of 1–3 [linked actions](#linked-actions). When absent, the Slip is a single button labelled `label` whose target is the discovery URL itself. |
 | `disabled` | no | boolean | When `true`, nothing in this response may be signed. See [Unavailable actions](#unavailable-actions). |
 | `reason` | no | object | Why the Slip is unavailable. Valid only alongside `disabled`. |
@@ -352,6 +353,359 @@ responses](#failure-responses).
 }
 ```
 
+### Building the transaction
+
+A client turns a Slip into a transaction by issuing `POST` to the target it
+resolved at discovery: the `href` of the linked action a person chose, with
+every placeholder substituted, or the discovery URL itself where the Slip
+declared no `links`.
+
+The request body is a single JSON object.
+
+| Field | Required | Type | Rule |
+|---|---|---|---|
+| `changeAddress` | yes | string | A bech32 payment address of the connected wallet, per [CIP-19], to which the client returns change. An endpoint MAY address outputs to it. |
+| `network` | yes | string | One of `mainnet`, `preprod`, `preview`. MUST be the network the connected wallet reports. |
+
+A client MUST NOT send any other member and an endpoint MUST reject a body
+carrying one. Those two fields are the whole of what a Slip endpoint learns
+about a person: one address, which they disclose to a counterparty every time
+they transact anyway, and the network it is on. A client MUST NOT send its
+unspent outputs and an endpoint MUST NOT ask for them — that is the whole of
+[Balancing](#balancing), and it is what this shape exists to make structural
+rather than promised.
+
+The request carries no `version`, because one URL speaks one major version and
+there is nothing to negotiate; see [Protocol versioning](#protocol-versioning).
+Parameter values are not in the body either: they were substituted into `href`
+before the request was made, so an endpoint reads them from its own URL.
+
+**Three statements of network have to agree.** An endpoint MUST reject with
+`WRONG_NETWORK` unless the network the Slip declared at `GET`, the `network` the
+request states, and the network its own address encodes are the same. Each is
+observable to the endpoint and each can be wrong on its own — a stale card, a
+wallet switched between discovery and submission, an address pasted from another
+network — and a transaction built across two of them is refused by the ledger
+long after the person believed it was sent.
+
+```http
+POST /api/slips/pay/corner-store HTTP/1.1
+Host: linktap.example
+Content-Type: application/json
+Accept: application/json
+
+{
+  "changeAddress": "addr1qxhnsjcej3c36wkl00plhu94pt5x0t4jr8wnnzxuuwwyjynn4lleg4u9dpmgh74jap9ef7587khxr79r430d4gkalfwsl0vysa",
+  "network": "mainnet"
+}
+```
+
+A successful response MUST have status `200`, MUST set `Content-Type` to
+`application/json`, and MUST set `Access-Control-Allow-Origin: *`. It MUST NOT
+be cached and MUST set `Cache-Control: no-store`. A partial intent is built for
+one person, against one address, and expires; a cached one is a stale
+transaction served to whoever asks next.
+
+```http
+HTTP/1.1 200 OK
+Content-Type: application/json
+Access-Control-Allow-Origin: *
+Cache-Control: no-store
+```
+
+**Preflight is not optional here.** A JSON body makes this request non-simple,
+so a browser sends `OPTIONS` first and the `POST` never leaves the machine
+unless that is answered. An endpoint MUST answer `OPTIONS` on every Slip URL
+with `Access-Control-Allow-Origin: *`, `Access-Control-Allow-Methods: GET, POST,
+OPTIONS` and `Access-Control-Allow-Headers: Content-Type`, and SHOULD set
+`Access-Control-Max-Age`. As at discovery, an endpoint MUST NOT require
+credentials and MUST NOT set `Access-Control-Allow-Credentials`.
+
+**A `POST` commits nothing.** It returns a transaction and signs nothing, so an
+endpoint MUST NOT treat it as a purchase, and MUST NOT move state a person
+cannot then release — a seat held by a request the person never signed is a seat
+lost to everyone. Where a publisher genuinely needs to hold something, the hold
+is bounded by `validUntil` and released when it passes.
+
+#### Build modes
+
+`build` in the discovery response names who balances the transaction. Version 1
+defines two values and implements one.
+
+- `local` — the endpoint returns its own side of the intent and the client
+  balances it against unspent outputs the endpoint never sees. Absent means
+  `local`, and everything in this document describes it.
+- `server` — the client sends its unspent outputs and the endpoint returns a
+  complete transaction. Reserved. Version 1 does not define that request, and no
+  client implements it.
+
+A client MUST NOT `POST` to a Slip declaring `build: "server"`. It MUST render
+the card, MUST NOT present a control that can be pressed, and MUST fail with
+`UNSUPPORTED_BUILD_MODE`, so that a person meets a Slip this client cannot build
+rather than one that appears broken.
+
+The value is reserved in the schema rather than in prose alone. A client MUST
+reject an undefined member, so an endpoint that declared a mode this version had
+not defined would be malformed rather than unsupported, and the mode that
+eventually ships would cost a major version instead of a field. What a
+server-balanced mode hands an endpoint — the person's whole unspent output set,
+and with it a picture of everything they hold — is the reason it is not in
+version 1 and the reason a client will warn before using it when it is.
+
+### The partial intent
+
+A successful `POST` returns the publisher's side of a transaction, and nothing
+that the ledger or the wallet determines.
+
+| Field | Required | Type | Rule |
+|---|---|---|---|
+| `type` | yes | string | MUST be `"partial"`. Discriminates a partial intent from discovery metadata and from a failure. |
+| `version` | yes | string | The major version of this protocol the response speaks, under the same rule as discovery. |
+| `intent` | yes | object | What the transaction is asked to do. |
+| `message` | no | string | Plain text addressed to the person, 1–300 characters. MUST NOT contain markup and MUST NOT carry internal detail — no queue names, no upstream hosts, no identifiers of the publisher's own systems. |
+
+`message` is a claim, not a description of the transaction. A client MUST render
+it alongside the effects it derived and MUST NOT render it in place of them:
+prose that reached the person instead of the arithmetic is the failure this
+protocol is built to prevent.
+
+The `intent` object carries the transaction's parts.
+
+| Field | Required | Type | Rule |
+|---|---|---|---|
+| `outputs` | no | array | 1–16 [outputs](#outputs) the transaction pays. |
+| `certificates` | no | array | 1–8 [certificates](#certificates) it carries. |
+| `withdrawRewards` | no | boolean | When `true`, the transaction withdraws the whole balance of the wallet's own reward account. See [Rewards](#rewards). |
+| `validUntil` | yes | string | An [RFC 3339] instant in UTC, to the second, with no offset and no fraction. After it, the intent is stale. |
+
+An intent MUST carry at least one of `outputs`, `certificates` or
+`withdrawRewards`, and a client MUST reject one that carries none: a transaction
+that does nothing still costs a fee, and asking a person to pay one for nothing
+is either a defect or an attack.
+
+**Every quantity is an integer count of base units, written in decimal, as a
+string.** Lovelace for ADA; the raw on-chain quantity for a native asset. No
+field in this document is decimals-adjusted, and there is no field in which a
+publisher may state how many decimals an asset has. A client MUST NOT infer
+decimals from a Slip, and MUST compare declared against derived in base units.
+
+That rule is short and it is the one this ecosystem has paid for most often:
+mishandled decimals on an amount has shipped in production wallets more than any
+other defect in the `web+cardano:` family. Two things follow from it. Quantities
+are strings because a JSON number cannot carry them — a large asset quantity
+does not survive a double, and `12.5` is not a count of anything. And decimals
+are absent because a publisher able to state them could declare 1200 base units,
+display them as `0.0012`, and pass a comparison of 1200 against 1200 while the
+person read a figure a millionth of the one they authorised. Where a client can
+resolve an asset's decimals from on-chain metadata it MAY use them for display;
+where it cannot, it MUST show base units rather than guess.
+
+**An endpoint declares what it chooses, and nothing that is determined for it.**
+The fee, the deposit a certificate carries, the stake credential a certificate
+acts on, the balance of a reward account, the key hash behind a signature: each
+is fixed by the ledger, by a protocol parameter, or by the wallet, and none of
+them appears in this shape. There is therefore no field in which an endpoint can
+state one wrongly. A declared value that is right is redundant, and one that is
+wrong is either a transaction the ledger refuses or a figure shown to a person
+who had no way to check it.
+
+```json
+{
+  "type": "partial",
+  "version": "1",
+  "intent": {
+    "outputs": [
+      {
+        "address": "addr1qxettqndzx5pmwkaxydp0lpaffxsnfgkgwx6afzn43w9wd7pzq7lsck6w56xu7yz5tsypql5gpcw20s5csf9jlr7mkjsq9l5us",
+        "lovelace": "12000000"
+      }
+    ],
+    "validUntil": "2026-08-22T19:40:00Z"
+  },
+  "message": "One payment to the shop's address."
+}
+```
+
+#### Outputs
+
+An output is one payment the publisher asks the transaction to make.
+
+| Field | Required | Type | Rule |
+|---|---|---|---|
+| `address` | yes | string | A bech32 payment address per [CIP-19]. |
+| `lovelace` | yes | string | Base units of ADA. A floor, not a fixed amount — see below. |
+| `assets` | no | array | 1–16 native asset quantities travelling in this output. |
+
+| Field | Required | Type | Rule |
+|---|---|---|---|
+| `policyId` | yes | string | The minting policy id, 28 bytes as lowercase hex. |
+| `assetName` | yes | string | The on-chain asset name as lowercase hex, up to 32 bytes. An empty string is a policy's unnamed asset. Never a ticker: a ticker is a rendering of a name, not the name. |
+| `quantity` | yes | string | Base units, at least 1. |
+
+An output MUST NOT name the same asset twice — one `policyId` and `assetName`
+pair appears at most once per output — because two quantities for one asset have
+no defined sum here and the transaction that results would encode whichever the
+implementation happened to keep.
+
+Every address in the intent MUST encode the Slip's own network, and a client
+MUST reject an intent where one does not. The endpoint knows the network: it
+declared it at `GET` and was sent it again with the request.
+
+**Declared lovelace is a floor.** The ledger requires every output to carry a
+minimum quantity of ADA that depends on the output's own size and on a protocol
+parameter, so an endpoint sending native assets often cannot know what the
+output will cost to make. Where the declared amount is below that minimum, a
+client MUST raise it to the minimum, and MUST show the difference to the person
+as an effect of its own rather than folding it into the declared amount. An
+endpoint asking for the minimum and no more declares `"0"`.
+
+Without that rule the alternatives are both worse: an intent whose token payment
+cannot be built at all, or a client quietly spending more of a person's ADA than
+anything on screen accounted for. Naming it here is also what lets the effects
+comparison stay strict — the difference is a known adjustment with a stated
+cause, not an unexplained divergence.
+
+```json
+{
+  "type": "partial",
+  "version": "1",
+  "intent": {
+    "outputs": [
+      {
+        "address": "addr1qxettqndzx5pmwkaxydp0lpaffxsnfgkgwx6afzn43w9wd7pzq7lsck6w56xu7yz5tsypql5gpcw20s5csf9jlr7mkjsq9l5us",
+        "lovelace": "0",
+        "assets": [
+          {
+            "policyId": "1ec7e2a7162b3aab4a428333409f8ba653c9e37996531ebf09f40128",
+            "assetName": "5553444d",
+            "quantity": "12000000"
+          }
+        ]
+      }
+    ],
+    "validUntil": "2026-08-22T19:40:00Z"
+  },
+  "message": "12.00 USDM to the shop. The ADA travelling with it is the ledger's minimum and comes back to you as change on your next spend."
+}
+```
+
+#### Certificates
+
+A certificate acts on the connected wallet's own stake credential.
+
+| Field | Required | Type | Rule |
+|---|---|---|---|
+| `type` | yes | string | One of `stakeRegistration`, `stakeDeregistration`, `stakeDelegation`, `voteDelegation`. |
+| `poolId` | no | string | A bech32 pool id. REQUIRED by `stakeDelegation`, and MUST NOT appear on any other type. |
+| `drep` | no | string | A bech32 DRep id per [CIP-129], or `abstain`, or `noConfidence`. REQUIRED by `voteDelegation`, and MUST NOT appear on any other type. |
+
+The credential itself is absent, and so is the deposit. An endpoint holds one
+address and has no business naming a person's own credential back at them; the
+client supplies it, and an endpoint therefore never learns which credential a
+certificate ended up naming. A registration deposit and a deregistration refund
+are protocol parameters the ledger applies whatever anyone declared, so the
+client supplies those too and renders them among the derived effects.
+
+What remains is exactly the part the publisher does know and does choose: which
+pool, or which DRep.
+
+```json
+{
+  "type": "partial",
+  "version": "1",
+  "intent": {
+    "certificates": [
+      {
+        "type": "stakeDelegation",
+        "poolId": "pool1ayfz9ymjutjzx0a33q8tq6zrn8lj3ckmzp69c9vxk8kyxylly5y"
+      }
+    ],
+    "validUntil": "2026-08-22T19:40:00Z"
+  },
+  "message": "Delegate to the Community Stake Pool. Your ADA never leaves your wallet."
+}
+```
+
+#### Rewards
+
+`withdrawRewards` carries no amount, because a withdrawal must take the whole
+balance of a reward account and only the client can know what that balance is.
+The endpoint declares that a withdrawal happens; the client resolves the account
+from its own credential, reads the balance, and renders the exact figure it
+withdrew.
+
+#### Required signers, and why there are none
+
+A transaction body can name key hashes whose signatures it requires, and a
+version of this intent could let a publisher ask for them. This one does not,
+because in the mode specified here nothing could read them.
+
+Required signers exist so that a script can see who signed. A script runs when a
+transaction spends from a script address, mints, withdraws from a script stake
+credential, or carries a script certificate. A Mode A transaction does none of
+those: its inputs are selected by the client from an ordinary wallet, this
+version defines no mint, and the withdrawal and certificates above act on the
+wallet's own key-based stake credential. Nor can a later transaction read this
+one's signers — they are visible only inside the transaction that carries them.
+
+What remains is a field that obliges the ledger to demand a witness, costs the
+person the bytes and the fee to carry it, and tells no one anything they could
+not read from the transaction's own inputs. A publisher reconciling payments
+off-chain has the witness set and the input addresses already.
+
+The field returns when something can act on it: script actions, or the
+server-balanced mode reserved under [Build modes](#build-modes). Adding it then
+is a new major version, which is the cost this document accepts everywhere in
+exchange for a client that rejects members it does not understand.
+
+### Balancing
+
+The client completes the transaction. It selects inputs from the connected
+wallet's unspent outputs, adds the outputs, certificates and withdrawal the
+intent declared, computes the fee, and returns the remainder to
+`changeAddress`.
+
+**A client MUST NOT send the user's unspent outputs to a Slip endpoint, and MUST
+NOT send anything else describing what the wallet holds.** In this version there
+is no request in which it could: the build request is a closed object of two
+fields. The privacy property is therefore structural rather than a policy — an
+endpoint learns that someone at a given address wanted a given intent, and never
+what they hold.
+
+**A client MUST NOT set a validity interval ending after `validUntil`.** It
+SHOULD set a shorter one where its own rebuild path allows, because a
+transaction that stays submittable for hours can be submitted hours later, by
+anyone who obtained it, against a fee market and a UTxO set that have both
+moved. A client MUST reject an intent carrying a `validUntil` that has already
+passed, and MUST NOT ask for a signature over a transaction whose interval has
+expired while the person was reading it — it rebuilds by repeating the `POST`
+and derives the effects again before prompting.
+
+Three conditions belong to this step, and each is a client condition in the
+vocabulary of [Failure responses](#failure-responses) — none of them travels
+over HTTP, because none is something an endpoint can observe:
+
+- `INSUFFICIENT_FUNDS`, when the wallet's unspent outputs cannot cover the
+  intent, the minimum ADA its outputs require, and the fee. It is in the request
+  class: the person can act, and the same request will succeed once they have.
+- `CANNOT_BALANCE`, when the intent cannot be built into a valid transaction for
+  any other reason — a size limit, a count of outputs no selection satisfies.
+- `INTENT_EXPIRED`, when `validUntil` has passed. It is transient: a fresh
+  `POST` returns a fresh intent, which is exactly what the client's rebuild path
+  does.
+
+An endpoint MUST NOT send any of the three. It cannot see a wallet's unspent
+outputs, so it cannot know that they are insufficient — a code claiming
+otherwise is a non-conforming endpoint asserting a fact it has no access to.
+
+What the client holds at the end of this step is a complete, unsigned
+transaction, and the intent above is the declaration it will be judged against.
+The metadata a Slip showed at discovery is prose and is never that declaration:
+a claim in a `title` cannot be compared with arithmetic, and a client MUST NOT
+treat one as though it had been.
+
+<!-- #19 inserts effects derivation and the mismatch rules here. -->
+
 ### Failure responses
 
 A request that cannot be answered fails with a non-2xx status and a body of the
@@ -396,14 +750,18 @@ failure retryable is an endpoint able to keep a client asking.
 |---|---|---|---|---|
 | `INVALID_PARAMETER` | request | 400 | endpoint | A submitted value was rejected. `field` names it where a single parameter is at fault. |
 | `WRONG_NETWORK` | request | 400 | endpoint, client | The Slip's `network` and the connected wallet's network do not agree. |
+| `INSUFFICIENT_FUNDS` | request | — | client | The wallet's unspent outputs cannot cover the intent, the minimum ADA its outputs require, and the fee. |
 | `NOT_FOUND` | terminal | 404 | endpoint | Nothing at this URL describes a Slip. |
 | `UNAVAILABLE` | terminal | 409 | endpoint | The action is closed for now, and may open again. |
 | `EXPIRED` | terminal | 410 | endpoint | The Slip had a deadline and it has passed. This is permanent. |
 | `MALFORMED_RESPONSE` | terminal | — | client | A response arrived that this protocol cannot read. |
 | `UNSUPPORTED_VERSION` | terminal | — | client | The response is in a major version this client does not implement. |
+| `UNSUPPORTED_BUILD_MODE` | terminal | — | client | The Slip declares a `build` mode this client does not implement. |
+| `CANNOT_BALANCE` | terminal | — | client | The intent cannot be built into a valid transaction, for a reason other than funds. |
 | `RATE_LIMITED` | transient | 429 | endpoint | The endpoint is deliberately refusing for now. `Retry-After` SHOULD be set. |
 | `UPSTREAM_FAILURE` | transient | 502 | endpoint | A service the endpoint depends on failed. |
 | `INTERNAL_ERROR` | transient | 500 | endpoint | The endpoint failed and cannot say more than that. |
+| `INTENT_EXPIRED` | transient | — | client | A partial intent's `validUntil` has passed. A fresh `POST` returns a fresh one. |
 | `UNREACHABLE` | transient | — | client | No usable response: DNS, TLS, a timeout, or a cross-origin request the browser refused. |
 
 An endpoint MUST send each code with the status paired with it above, and MUST
@@ -524,11 +882,10 @@ Filled incrementally, one section per issue. Add subsections here rather than
 new top-level headings — CIP-0001 fixes the H2 set.
 
   #16  slips.json domain mapping
-  #17  POST request/response and the partial-intent format (Mode A)
   #19  mandatory client-side effects derivation and mismatch rules
   #20  security considerations
 
-Those four insert above 'Failure responses' and 'Protocol versioning', which
+Those three insert above 'Failure responses' and 'Protocol versioning', which
 are cross-cutting and read last.
 
 The `//slip` authority registration and its versioned grammar belong here
@@ -582,3 +939,5 @@ This CIP is licensed under [CC-BY-4.0](https://creativecommons.org/licenses/by/4
 [RFC 2119]: https://www.rfc-editor.org/rfc/rfc2119
 [RFC 8174]: https://www.rfc-editor.org/rfc/rfc8174
 [RFC 3986]: https://www.rfc-editor.org/rfc/rfc3986
+[CIP-19]: https://github.com/cardano-foundation/CIPs/tree/master/CIP-0019
+[CIP-129]: https://github.com/cardano-foundation/CIPs/tree/master/CIP-0129

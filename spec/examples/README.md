@@ -9,13 +9,22 @@ One directory per shape, named for the `type` the payload declares, and the same
 three buckets inside each:
 
 ```
-get/                   type: "slip"    — discovery metadata
-error/                 type: "error"   — a request that failed
+get/                   type: "slip"     — discovery metadata
+build-request/         (no type)        — the body a client POSTs
+partial/               type: "partial"  — the publisher's side of a transaction
+error/                 type: "error"    — a request that failed
 └── valid/             MUST be accepted
     invalid/
     ├── schema/        MUST be rejected by the JSON Schema alone
     └── rule/          schema-valid, and MUST still be rejected
 ```
+
+`build-request/` is the one shape with no `type` to name it by, and it is the only
+payload here that travels *to* an endpoint rather than from one. It is a closed
+object of two fields, which is where the privacy property of Mode A actually
+lives: `utxos-in-the-body.json` is the payload this protocol exists to make
+unsendable, and it is rejected by the same keyword that rejects any other
+undeclared member.
 
 `error/` is validated by two schemas rather than one. An endpoint conforms to
 `slip-error-response-endpoint.schema.json`, where `code` is closed to the eight
@@ -27,10 +36,11 @@ that difference is the point: see below.
 
 ## `invalid/rule` — the checks a validator cannot make
 
-Six normative rules compare values a JSON Schema cannot see at once, need the
-request URL, or judge what a string says rather than what shape it is. A client
-that validates and stops is not conforming; these are the payloads that prove
-it.
+Eleven normative rules compare values a JSON Schema cannot see at once, need
+context the payload does not carry — the request URL, the network the Slip
+declared, the wall clock — or judge what a string says rather than what shape it
+is. A client that validates and stops is not conforming; these are the payloads
+that prove it.
 
 | Payload | Rejected because |
 |---|---|
@@ -39,7 +49,12 @@ it.
 | `get/undeclared-placeholder.json` | `href` contains `{amount}` with no parameter named `amount`. |
 | `get/unfilled-placeholder-parameter.json` | A parameter is declared that no placeholder references, so its value would reach nothing. |
 | `error/markup-in-message.json` | `message` carries markup, which a client renders as text — so the person reads the tags. |
+| `build-request/address-network-disagrees.json` | A `preprod` address sent with `network: "mainnet"`. Two sibling values, and one of them encodes the answer to the other. |
+| `partial/already-expired.json` | `validUntil` has passed. Needs the clock, which no schema has. |
+| `partial/output-on-wrong-network.json` | A `preprod` address in an intent served by a `mainnet` Slip. Needs the network the endpoint declared at `GET`. |
+| `partial/duplicate-asset.json` | One output names the same policy and asset name twice. Two quantities for one asset have no defined sum. |
 | `error/internal-detail-in-message.json` | `message` names an internal host and path. Well-formed, well under the length limit, and still not something to show anyone. |
+| `partial/internal-detail-in-message.json` | The same rule on the other side of the build step: a queue path and an internal hostname, in the text shown just before a signature is requested. |
 
 The last two are the reason `message` cannot be an exception's `.message`
 piped to the wire: both would pass every check a schema can make.
@@ -47,11 +62,14 @@ piped to the wire: both would pass every check a schema can make.
 ## `error/` — the codes, and the two payloads that prove the split
 
 The failure taxonomy is a closed set for an endpoint, and each of its eight
-endpoint-raised codes has a payload in `valid/`. Three codes are raised only by
-a client — `MALFORMED_RESPONSE`, `UNSUPPORTED_VERSION`, `UNREACHABLE` — and have
-none on purpose: they name a failure of the exchange itself, so there is no body
-they could arrive in. `WRONG_NETWORK` is raised by both and is sendable, so it
-has one.
+endpoint-raised codes has a payload in `valid/`. Seven codes are raised only by
+a client and have none on purpose. Three name a failure of the exchange itself —
+`MALFORMED_RESPONSE`, `UNSUPPORTED_VERSION`, `UNREACHABLE` — so there is no body
+they could arrive in. The other four arise after a conforming response, in work
+only the client can do: `INSUFFICIENT_FUNDS`, `CANNOT_BALANCE` and
+`INTENT_EXPIRED` come out of balancing, and `UNSUPPORTED_BUILD_MODE` out of a
+Slip that asks to be balanced by its own publisher. `WRONG_NETWORK` is raised by
+both and is sendable, so it has one.
 
 Two payloads under `invalid/schema/` are rejected by the endpoint schema and
 **accepted** by the client schema, which is the only reason the two schemas
@@ -68,8 +86,9 @@ back to classifying by HTTP status.
 
 ## Keeping it honest
 
-`test/spec-get-discovery.test.ts` and `test/spec-error-taxonomy.test.ts` assert
-that every file here is accounted for: each `valid/` payload validates, each
+`test/spec-get-discovery.test.ts`, `test/spec-post-intent.test.ts` and
+`test/spec-error-taxonomy.test.ts` assert that every file here is accounted
+for: each `valid/` payload validates, each
 `invalid/schema/` payload is rejected by the keyword and at the location its
 case names, and each `invalid/rule/` payload **passes** validation — which is
 what makes it evidence that the rule has to live somewhere else. Every

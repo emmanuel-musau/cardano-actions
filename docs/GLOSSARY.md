@@ -44,7 +44,7 @@ Terms used throughout the spec, issues, and code. Cardano-specific meanings, not
 
 **Mode A / Mode B** — client-side balancing (v1 default and only mode) versus server-side balancing (client ships its UTxO set; spec'd, declared, warned about, deferred). See ADR-0002.
 
-**Partial transaction** — the `POST` response in Mode A: only the dApp's side of the intent (outputs, certificates, required signers, validity), before the client balances it.
+**Partial transaction** — the `POST` response in Mode A: only the dApp's side of the intent (outputs, certificates, a reward withdrawal, validity), before the client balances it.
 
 **Policy ID** — identifies a native asset's minting policy. Asset deltas are derived per policy + asset name; USDM and USDCx are each a policy.
 

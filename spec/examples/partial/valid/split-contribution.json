@@ -1,0 +1,18 @@
+{
+  "type": "partial",
+  "version": "1",
+  "intent": {
+    "outputs": [
+      {
+        "address": "addr1qxcd9f33uzmeftka0df9mqqngnv7n5pysjpz4x4rkc30vgje9ckxtcvv6fygn4lutdqf56khahq80sujcrn0rhn3mg3sj0pnxm",
+        "lovelace": "25000000"
+      },
+      {
+        "address": "addr1qxettqndzx5pmwkaxydp0lpaffxsnfgkgwx6afzn43w9wd7pzq7lsck6w56xu7yz5tsypql5gpcw20s5csf9jlr7mkjsq9l5us",
+        "lovelace": "5000000"
+      }
+    ],
+    "validUntil": "2026-08-22T19:40:00Z"
+  },
+  "message": "25 ADA to the community fund and 5 ADA to the venue, in one transaction."
+}

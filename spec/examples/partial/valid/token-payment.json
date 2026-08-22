@@ -1,0 +1,21 @@
+{
+  "type": "partial",
+  "version": "1",
+  "intent": {
+    "outputs": [
+      {
+        "address": "addr1qxettqndzx5pmwkaxydp0lpaffxsnfgkgwx6afzn43w9wd7pzq7lsck6w56xu7yz5tsypql5gpcw20s5csf9jlr7mkjsq9l5us",
+        "lovelace": "0",
+        "assets": [
+          {
+            "policyId": "1ec7e2a7162b3aab4a428333409f8ba653c9e37996531ebf09f40128",
+            "assetName": "5553444d",
+            "quantity": "12000000"
+          }
+        ]
+      }
+    ],
+    "validUntil": "2026-08-22T19:40:00Z"
+  },
+  "message": "12.00 USDM to the shop. The ADA travelling with it is the ledger's minimum and comes back to you as change on your next spend."
+}
