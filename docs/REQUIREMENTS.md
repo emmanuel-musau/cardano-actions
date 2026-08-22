@@ -6,7 +6,7 @@ Distilled from the design document. This file is the product source of truth for
 
 Every on-chain action on Cardano begins with leaving the current context: navigate to a dApp, connect a wallet, find the screen, fill a form, sign. Intent forms when a link is seen and dies before the dApp loads. There is no standard way to say "here is a specific thing to do on-chain, ready to sign" in a form that travels — X, WhatsApp, Telegram, SMS, a printed QR code.
 
-Not for want of trying. CIP-13's `web+cardano:` scheme has nine registered authorities, and CIP-99 — Active, with five wallet implementations — already has wallets POST to a project's own server from a link. What none of them do is return a transaction for the user to authorise: the four that produce a transaction fix its shape in the URI, and CIP-99's server builds and signs its own. So a new kind of action means a new CIP and a per-wallet integration. See `docs/ECOSYSTEM.md`.
+Not for want of trying. CIP-13's `web+cardano:` scheme has nine registered authorities, and CIP-99 — Active, with five wallet implementations — already has wallets POST to a project's own server from a link. What none of them do is return a transaction for the user to authorise: the four that produce a transaction fix its shape in the URI, and CIP-99's server builds and signs its own. So a new kind of action means a new CIP and a per-wallet integration — and that price is not theoretical: CIP-13 itself has been `Proposed` with no listed implementors since 2020, and CIP-157, which only adds native assets to a payment link, has been an open PR since June 2024. See `docs/ECOSYSTEM.md` §1.
 
 ## 2. What we build
 
@@ -65,7 +65,7 @@ Tier 1 is in M1 unconditionally. Tier 2 carries an explicit go/no-go at end of M
 
 **Deferred (roadmap — do not build in M1):** mobile CIP-13 `//slip` deep links; a CIP-186 transport for native mobile clients; browser extension inline rendering; server-side balancing (Mode B); additional framework adapters; additional Slip types.
 
-On mobile, a shared link opened in a phone browser reaches a wallet through CIP-158 `//browse`, which lands the interstitial in the wallet's in-app browser where CIP-30 is injected and the desktop flow runs unchanged. CIP-186 is a separate case — the transport a *native mobile app* would use to be a client — and cannot carry the interstitial, because its source-app attestation requires an installed app. See `docs/ECOSYSTEM.md` §3.
+On mobile, a shared link opened in a phone browser reaches a wallet through CIP-158 `//browse` — Active, with VESPR and Begin as implementors — which lands the interstitial in the wallet's in-app browser where CIP-30 is injected and the desktop flow runs unchanged. Wallet URI handlers are unreliable in practice, so that entry is verified per wallet rather than assumed (#98), and the link always remains openable in the phone's own browser: the mobile story degrades to the desktop flow and never depends on a wallet's URI handler. CIP-186 is a separate case — the transport a *native mobile app* would use to be a client — and cannot carry the interstitial, because its source-app attestation requires an installed app. See `docs/ECOSYSTEM.md` §3.
 
 ## 7. Reference integration — AdaLink
 

@@ -10,13 +10,17 @@ Terms used throughout the spec, issues, and code. Cardano-specific meanings, not
 
 **Balancing** — selecting inputs, computing change, and setting the fee so a transaction is valid. On eUTxO somebody must do it; we do it client-side (see ADR-0002).
 
+**Base units** — the integer unit an on-chain quantity is actually denominated in: lovelace for ADA, raw quantity for a native asset. Declared metadata, derived effects and the mismatch comparison all work in base units; decimals are display only and never authoritative.
+
 **CBOR** — the binary encoding of Cardano transactions. The `verifier` decodes it to derive what a transaction actually does.
 
 **Certificate** — a transaction component performing a staking operation: stake registration (with a refundable deposit), deregistration, or delegation to a pool.
 
 **Change address** — where a transaction's leftover value returns. Supplied by the wallet via CIP-30 and sent to the endpoint in the POST body.
 
-**CIP-13** — Cardano's URI scheme (`web+cardano:`). Currently covers payment and stake delegation. Our proposed `//slip` authority extends it; deferred to roadmap in M1.
+**CIP-13** — Cardano's URI scheme (`web+cardano:`). Covers payment and stake delegation, and every extension registers an authority under it. Still `Proposed` with no listed implementors since 2020 — see `docs/ECOSYSTEM.md` §1 for why that matters. Our proposed `//slip` authority extends it; deferred to roadmap in M1.
+
+**CIP-158** — the `//browse` authority: `web+cardano://browse/v1?uri=<percent-encoded https URL>` opens that URL in the wallet's in-app browser. Active, implemented by VESPR and Begin. Our mobile entry path, because CIP-30 is injected once the page loads there.
 
 **CIP-30** — the browser wallet connector. Note the detail that trips people up: `signTx` returns a **witness set**, not a signed transaction. Witnesses must be assembled into the body before `submitTx`.
 
